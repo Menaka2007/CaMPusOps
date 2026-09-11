@@ -7,6 +7,9 @@ import {
   Key, Truck, Home, BarChart2, FileSpreadsheet, Download, Check, X,
   Settings, UserCheck, Shield, HelpCircle
 } from 'lucide-react';
+import FloatingAIChatbot from './FloatingAIChatbot';
+import StatusBadge from './StatusBadge';
+import MarkdownView from './MarkdownView';
 
 const AdminDashboard = ({ user, onLogout }) => {
   // Navigation
@@ -94,10 +97,7 @@ const AdminDashboard = ({ user, onLogout }) => {
     { id: 2, company: 'Cognizant', role: 'Programmer Analyst', CTC: '4.5 LPA', date: '2026-08-18', eligible_cgpa: 6.0, status: 'Active' }
   ]);
 
-  const [events, setEvents] = useState([
-    { id: 1, name: 'Eshwar Fest 2026', type: 'Cultural', date: '2026-09-10', venue: 'Main Auditorium', registrations: 450 },
-    { id: 2, name: 'AI & Web3 Workshop', type: 'Technical Seminar', date: '2026-08-20', venue: 'CSE Seminar Hall', registrations: 120 }
-  ]);
+  const [events, setEvents] = useState([]);
 
   const [hostel, setHostel] = useState([
     { id: 1, block: 'A-Block (Boys)', room_no: '101', capacity: 4, filled: 3, status: 'Available' },
@@ -181,6 +181,12 @@ const AdminDashboard = ({ user, onLogout }) => {
         const data = await notifRes.json();
         setNotifications(data);
       }
+
+      const calRes = await fetch('http://127.0.0.1:8000/api/academic-calendar');
+      if (calRes.ok) {
+        const data = await calRes.json();
+        setEvents(data.calendar || []);
+      }
     } catch (error) {
       console.error("Error syncing admin DB data:", error);
     } finally {
@@ -214,6 +220,31 @@ const AdminDashboard = ({ user, onLogout }) => {
       }
     } catch (error) {
       showToast("Failed to update complaint", "error");
+    }
+  };
+
+  const handleCleanSpamComplaints = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/admin/complaints/clean-spam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      showToast(data.message, 'success');
+      const newLog = {
+        timestamp: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        user: 'ADMIN001',
+        action: `Executed AI Spam Purge Engine`,
+        status: 'Success'
+      };
+      setAuditLogs([newLog, ...auditLogs]);
+      fetchAdminData();
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to purge spam complaints.', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -346,7 +377,9 @@ const AdminDashboard = ({ user, onLogout }) => {
         body: JSON.stringify({
           title: broadcastForm.title,
           content: `${broadcastForm.content} (Target: ${broadcastForm.target.toUpperCase()})`,
-          category: broadcastForm.category
+          category: broadcastForm.category,
+          sender_name: 'Campus Registrar',
+          sender_role: 'admin'
         })
       });
       if (res.ok) {
@@ -356,6 +389,51 @@ const AdminDashboard = ({ user, onLogout }) => {
       }
     } catch (e) {
       showToast("Notification failed to post", "error");
+    }
+  };
+
+  const handleAddEvent = async (e) => {
+    e.preventDefault();
+    if (!eventForm.name.trim()) return;
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/academic-calendar/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: eventForm.name.trim(),
+          date: eventForm.date || new Date().toISOString().split('T')[0],
+          type: eventForm.type || 'event'
+        })
+      });
+      if (res.ok) {
+        showToast("Event scheduled and synchronized across all portals!");
+        setModalType(null);
+        setEventForm({ name: '', type: 'event', date: '', venue: '', registrations: 0 });
+        fetchAdminData();
+      } else {
+        showToast("Failed to schedule event", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error scheduling event", "error");
+    }
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/academic-calendar/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      if (res.ok) {
+        showToast("Event removed from academic calendar");
+        fetchAdminData();
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error deleting event", "error");
     }
   };
 
@@ -538,6 +616,32 @@ const AdminDashboard = ({ user, onLogout }) => {
                 </div>
               </form>
             )}
+
+            {modalType === 'event' && (
+              <form onSubmit={handleAddEvent} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Add Campus Event</h4>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#475569', marginBottom: '0.25rem' }}>Event Title</label>
+                  <input type="text" required placeholder="e.g. Annual Technical Symposium" value={eventForm.name} onChange={e => setEventForm({...eventForm, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid #cbd5e1' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#475569', marginBottom: '0.25rem' }}>Event Type</label>
+                  <select value={eventForm.type} onChange={e => setEventForm({...eventForm, type: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid #cbd5e1', background: '#fff' }}>
+                    <option value="event">Campus Event</option>
+                    <option value="holiday">Holiday</option>
+                    <option value="exam">Exam</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#475569', marginBottom: '0.25rem' }}>Date</label>
+                  <input type="date" required value={eventForm.date} onChange={e => setEventForm({...eventForm, date: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid #cbd5e1' }} />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                  <button type="button" onClick={() => setModalType(null)} style={{ padding: '0.5rem 1rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '0.375rem', cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" style={{ padding: '0.5rem 1rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}>Save & Broadcast Event</button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
@@ -559,13 +663,13 @@ const AdminDashboard = ({ user, onLogout }) => {
       }}>
         
         {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(109, 40, 217, 0.1)', marginBottom: '1.25rem' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-            <ShieldAlert size={22} style={{ color: '#fff' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgba(217, 119, 6, 0.2)', marginBottom: '1.25rem' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #1e1b4b, #4338ca)', border: '1.5px solid rgba(217, 119, 6, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fbbf24', fontSize: '1.2rem' }}>
+            👑
           </div>
           <div>
-            <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, background: 'linear-gradient(to right, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Admin Control Center</h4>
-            <span style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Smart Campus operations</span>
+            <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: '#1e1b4b' }}>Royal Control Center</h4>
+            <span style={{ fontSize: '0.68rem', color: '#b45309', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' }}>SRI ESHWAR AUTONOMOUS SUITE</span>
           </div>
         </div>
 
@@ -649,7 +753,7 @@ const AdminDashboard = ({ user, onLogout }) => {
       </aside>
 
       {/* Main Administrative Viewport */}
-      <main style={{ flexGrow: 1, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', boxSizing: 'border-box', overflowY: 'auto', height: '100vh' }}>
+      <main style={{ flexGrow: 1, minWidth: 0, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', boxSizing: 'border-box', overflowY: 'auto', height: '100vh' }}>
         
         {/* Top bar with sync and search */}
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
@@ -1204,21 +1308,47 @@ const AdminDashboard = ({ user, onLogout }) => {
             ================================================== */}
         {activeTab === 'complaints' && (
           <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Complaint Escalation Center</h3>
-              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>Resolve operational tickets, assign faculty or technician response staff</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Complaint Escalation Center</h3>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>Resolve operational tickets, inspect AI priority levels, and purge unusual/spam complaints</p>
+              </div>
+              <button
+                onClick={handleCleanSpamComplaints}
+                disabled={loading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.55rem 1.1rem',
+                  borderRadius: '0.5rem',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.3)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <ShieldAlert size={16} />
+                <span>AI Auto-Purge Spam Complaints</span>
+              </button>
             </div>
             
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '750px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                     <th style={{ padding: '0.75rem', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>ID</th>
                     <th style={{ padding: '0.75rem', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>Student</th>
                     <th style={{ padding: '0.75rem', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>Category</th>
                     <th style={{ padding: '0.75rem', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>Description</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>AI Priority</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'center', color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>AI Moderation</th>
                     <th style={{ padding: '0.75rem', textAlign: 'center', color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>Status</th>
-                    <th style={{ padding: '0.75rem', textAlign: 'right', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, width: '240px' }}>Actions</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, width: '200px' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1226,6 +1356,9 @@ const AdminDashboard = ({ user, onLogout }) => {
                     const isPending = c.status === 'Pending';
                     const isProgress = c.status === 'In Progress';
                     const isResolved = c.status === 'Resolved';
+                    const aiFlag = c.ai_flag || 'Verified Genuine ✅';
+                    const priority = c.priority || 'Medium Priority 🛠️';
+
                     return (
                       <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '1rem 0.75rem', fontSize: '0.85rem', fontWeight: 700 }}>#{c.id}</td>
@@ -1277,6 +1410,16 @@ const AdminDashboard = ({ user, onLogout }) => {
                               </div>
                             )}
                           </div>
+                        </td>
+                        <td style={{ padding: '1rem 0.75rem', textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4c1d95', background: 'rgba(109, 40, 217, 0.08)', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}>
+                            {priority}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem 0.75rem', textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: aiFlag.includes('Verified') ? '#047857' : '#b91c1c', background: aiFlag.includes('Verified') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}>
+                            {aiFlag}
+                          </span>
                         </td>
                         <td style={{ padding: '1rem 0.75rem', textAlign: 'center' }}>
                           <span style={{
@@ -1459,17 +1602,54 @@ const AdminDashboard = ({ user, onLogout }) => {
             ================================================== */}
         {activeTab === 'events' && (
           <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, marginBottom: '1.5rem' }}>Campus Events Management</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
-              {events.map(ev => (
-                <div key={ev.id} className="glass-card" style={{ padding: '1.25rem' }}>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--secondary)', fontWeight: 800 }}>TYPE: {ev.type}</div>
-                  <h4 style={{ margin: '0.25rem 0 0.5rem 0' }}>{ev.name}</h4>
-                  <div style={{ fontSize: '0.85rem', color: '#475569' }}>Date: {ev.date}</div>
-                  <div style={{ fontSize: '0.85rem', color: '#475569' }}>Venue: {ev.venue}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem' }}>Registered attendees: <b>{ev.registrations}</b></div>
-                </div>
-              ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Campus Events Management</h3>
+                <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.75rem', color: '#64748b' }}>
+                  Synchronized academic calendar and campus events across staff, students, and administration
+                </p>
+              </div>
+              <button 
+                onClick={() => { 
+                  setEventForm({ name: '', type: 'event', date: new Date().toISOString().split('T')[0], venue: '', registrations: 0 }); 
+                  setModalType('event'); 
+                }} 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.45rem 0.85rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}
+              >
+                <Plus size={14} /> Add Event
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+              {events.map(ev => {
+                const cleanTitle = (ev.title || ev.name || '').split(' |tags:')[0].split(' |category:')[0];
+                return (
+                  <div key={ev.id} className="glass-card" style={{ padding: '1.25rem', position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span style={{ 
+                        fontSize: '0.65rem', 
+                        padding: '0.2rem 0.45rem', 
+                        borderRadius: '0.35rem', 
+                        background: ev.type === 'holiday' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(109, 40, 217, 0.1)', 
+                        color: ev.type === 'holiday' ? '#ef4444' : 'var(--primary)', 
+                        fontWeight: 800,
+                        textTransform: 'uppercase'
+                      }}>
+                        {ev.type || 'Event'}
+                      </span>
+                      <button 
+                        onClick={() => handleDeleteEvent(ev.id)}
+                        style={{ border: 'none', background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', cursor: 'pointer', padding: '0.35rem', borderRadius: '0.35rem' }}
+                        title="Delete Event"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <h4 style={{ margin: '0.5rem 0 0.35rem 0', fontSize: '1rem', color: '#1e293b' }}>{cleanTitle}</h4>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>📅 Date: <b>{ev.date}</b></div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1757,6 +1937,9 @@ const AdminDashboard = ({ user, onLogout }) => {
         )}
 
       </main>
+
+      {/* Docked AI Guard Panel */}
+      <FloatingAIChatbot user={user} isDocked={true} />
 
     </div>
   );

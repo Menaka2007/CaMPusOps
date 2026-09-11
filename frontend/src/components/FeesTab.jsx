@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, History, Award, RefreshCw, AlertCircle } from 'lucide-react';
+import { CreditCard, History, Award, RefreshCw, AlertCircle, Calendar } from 'lucide-react';
+import StatusBadge from './StatusBadge';
+import MarkdownView from './MarkdownView';
 
 const FeesTab = ({ user }) => {
   const [activeSubTab, setActiveSubTab] = useState('dues'); // dues, history, scholarship
@@ -7,8 +9,8 @@ const FeesTab = ({ user }) => {
   const [loading, setLoading] = useState(false);
 
   // Dynamic Query inputs defaulting to current logged-in student details
-  const [studentNameInput, setStudentNameInput] = useState(user.name || '');
-  const [registerNoInput, setRegisterNoInput] = useState(user.roll_no || '');
+  const [studentNameInput, setStudentNameInput] = useState(user?.name || '');
+  const [registerNoInput, setRegisterNoInput] = useState(user?.roll_no || '');
 
   const fetchData = async (subTab, nameVal = studentNameInput, rollVal = registerNoInput) => {
     setLoading(true);
@@ -28,7 +30,7 @@ const FeesTab = ({ user }) => {
         })
       });
       const resData = await res.json();
-      setData(resData.response);
+      setData(resData.response || '');
     } catch (err) {
       console.error(err);
     } finally {
@@ -45,101 +47,63 @@ const FeesTab = ({ user }) => {
     fetchData(activeSubTab);
   };
 
-  const renderLine = (line, i) => {
-    if (line.startsWith('### ')) {
-      return (
-        <h4 key={i} style={{ 
-          fontSize: '1.15rem', 
-          fontWeight: 800, 
-          margin: '1.5rem 0 1rem 0', 
-          color: 'var(--primary)', 
-          borderBottom: '2px solid rgba(109, 40, 217, 0.1)', 
-          paddingBottom: '0.5rem' 
-        }}>
-          {line.replace('### ', '')}
-        </h4>
-      );
-    }
-    
-    if (line.startsWith('- ')) {
-      const cleaned = line.replace('- ', '');
-      const parts = cleaned.split('|');
-      
-      if (parts.length >= 3) {
-        const titleAndTotal = parts[0].trim().replace(/\*\*/g, '');
-        const paidVal = parts[1].trim().replace(/\*\*/g, '');
-        const dueVal = parts[2].trim().replace(/\*\*/g, '');
-        
-        const isPaid = dueVal.includes('Fully Paid') || dueVal.includes('✅');
-        
-        return (
-          <div key={i} style={{ 
-            padding: '1rem', 
-            borderBottom: '1px solid rgba(109, 40, 217, 0.08)', 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            background: isPaid ? 'rgba(16, 185, 129, 0.02)' : 'rgba(239, 68, 68, 0.02)',
-            borderRadius: '0.75rem',
-            marginBottom: '0.5rem'
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
-                {titleAndTotal}
-              </span>
-              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
-                {paidVal}
-              </span>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <span style={{ 
-                fontWeight: 700, 
-                fontSize: '0.8rem',
-                padding: '0.35rem 0.85rem',
-                borderRadius: '9999px',
-                background: isPaid ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                color: isPaid ? '#10b981' : '#ef4444',
-                display: 'inline-block'
-              }}>
-                {dueVal}
-              </span>
-            </div>
-          </div>
-        );
-      } else {
-        // Fallback for list items (e.g. payment history list)
-        const formatted = cleaned.replace(/\*\*(.*?)\*\*/g, '$1');
-        return (
-          <div key={i} style={{ 
-            padding: '0.75rem 1rem', 
-            borderBottom: '1px solid rgba(0,0,0,0.04)', 
-            color: '#334155',
-            fontSize: '0.9rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>•</span>
-            <span>{formatted}</span>
-          </div>
-        );
-      }
-    }
-    
-    // Check for inline bold formatting in normal text lines
-    if (line.includes('**')) {
-      const parts = line.split('**');
-      return (
-        <p key={i} style={{ margin: '0.5rem 0', color: '#475569', fontSize: '0.9rem', lineHeight: '1.6' }}>
-          {parts.map((part, index) => index % 2 === 1 ? <strong key={index} style={{ color: '#1e293b', fontWeight: 700 }}>{part}</strong> : part)}
-        </p>
-      );
-    }
+  // Helper to parse fee items into structured rows
+  const parseFeeTable = (rawText) => {
+    if (!rawText) return { headerLines: [], feeRows: [], footerLines: [] };
+    const lines = rawText.split('\n');
+    const headerLines = [];
+    const feeRows = [];
+    const footerLines = [];
 
-    return <p key={i} style={{ margin: '0.5rem 0', color: '#475569', fontSize: '0.9rem', lineHeight: '1.6' }}>{line}</p>;
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('- ') && trimmed.includes('|')) {
+        const parts = trimmed.replace(/^- /, '').split('|');
+        if (parts.length >= 3) {
+          const col1 = parts[0].trim().replace(/\*\*/g, '');
+          const col2 = parts[1].trim().replace(/\*\*/g, '');
+          const col3 = parts[2].trim().replace(/\*\*/g, '');
+
+          // e.g. "Tuition Fee (Annual): ₹1,25,000"
+          const titleParts = col1.split(':');
+          const feeType = titleParts[0]?.trim() || col1;
+          const totalAmount = titleParts[1]?.trim() || '-';
+
+          // e.g. "Paid: ₹1,25,000"
+          const paidParts = col2.split(':');
+          const paidAmount = paidParts[1]?.trim() || col2;
+
+          // e.g. "Due: ₹0 (Fully Paid ✅)" or "Due: ₹45,000 (Pending ⚠️)"
+          const dueParts = col3.split(':');
+          const dueRaw = dueParts[1]?.trim() || col3;
+          const isPaid = dueRaw.toLowerCase().includes('fully paid') || dueRaw.includes('✅') || dueRaw.startsWith('₹0');
+          const dueAmount = dueRaw.replace(/\(.*?\)/g, '').replace(/[✅⚠️]/g, '').trim();
+
+          const deadline = isPaid ? 'Cleared / Completed' : 'Due by End of Term';
+
+          feeRows.push({
+            feeType,
+            totalAmount,
+            paidAmount,
+            dueAmount: dueAmount || '₹0',
+            status: isPaid ? 'Paid' : 'Pending',
+            deadline
+          });
+          return;
+        }
+      }
+
+      if (feeRows.length === 0) {
+        headerLines.push(line);
+      } else {
+        footerLines.push(line);
+      }
+    });
+
+    return { headerLines, feeRows, footerLines };
   };
+
+  const { headerLines, feeRows, footerLines } = parseFeeTable(data);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -181,46 +145,111 @@ const FeesTab = ({ user }) => {
         <button 
           type="submit" 
           disabled={loading}
-          style={{ padding: '0.6rem 1.5rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(109, 40, 217, 0.15)' }}
+          className="btn-royal-gold"
+          style={{ padding: '0.65rem 1.6rem', border: 'none', borderRadius: '0.5rem', fontWeight: 800, cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(217, 119, 6, 0.35)' }}
         >
           {loading ? 'Fetching Ledger...' : 'Check Payment Status'}
         </button>
       </form>
 
       {/* Sub Tabs */}
-      <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(217, 119, 6, 0.15)', paddingBottom: '0.5rem' }}>
         <button 
           onClick={() => setActiveSubTab('dues')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', background: 'none', borderBottom: activeSubTab === 'dues' ? '2px solid var(--primary)' : '2px solid transparent', color: activeSubTab === 'dues' ? 'var(--primary)' : '#64748b', fontWeight: 600, cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', background: 'none', borderBottom: activeSubTab === 'dues' ? '2.5px solid #d97706' : '2.5px solid transparent', color: activeSubTab === 'dues' ? '#b45309' : '#64748b', fontWeight: 700, cursor: 'pointer' }}
         >
           <CreditCard size={16} /> Dues & Fees
         </button>
         <button 
           onClick={() => setActiveSubTab('history')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', background: 'none', borderBottom: activeSubTab === 'history' ? '2px solid var(--primary)' : '2px solid transparent', color: activeSubTab === 'history' ? 'var(--primary)' : '#64748b', fontWeight: 600, cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', background: 'none', borderBottom: activeSubTab === 'history' ? '2.5px solid #d97706' : '2.5px solid transparent', color: activeSubTab === 'history' ? '#b45309' : '#64748b', fontWeight: 700, cursor: 'pointer' }}
         >
           <History size={16} /> Payment History
         </button>
         <button 
           onClick={() => setActiveSubTab('scholarship')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', background: 'none', borderBottom: activeSubTab === 'scholarship' ? '2px solid var(--primary)' : '2px solid transparent', color: activeSubTab === 'scholarship' ? 'var(--primary)' : '#64748b', fontWeight: 600, cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', background: 'none', borderBottom: activeSubTab === 'scholarship' ? '2.5px solid #d97706' : '2.5px solid transparent', color: activeSubTab === 'scholarship' ? '#b45309' : '#64748b', fontWeight: 700, cursor: 'pointer' }}
         >
           <Award size={16} /> Scholarship
         </button>
       </div>
 
       {/* Main Content Area */}
-      <div className="glass-card" style={{ padding: '2rem', minHeight: '200px' }}>
+      <div className="glass-card" style={{ padding: '1.75rem', minHeight: '220px', border: '1px solid rgba(217, 119, 6, 0.2)' }}>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
-            <RefreshCw className="animate-spin" size={24} style={{ color: 'var(--primary)' }} />
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '160px' }}>
+            <RefreshCw className="animate-spin" size={26} style={{ color: '#d97706' }} />
           </div>
         ) : data ? (
-          <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', fontSize: '0.95rem' }}>
-            {data.split('\n').map((line, i) => renderLine(line, i))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Header info (e.g. title) rendered with markdown */}
+            {headerLines.length > 0 && (
+              <MarkdownView content={headerLines.join('\n')} />
+            )}
+
+            {/* If structured fee rows exist (e.g. dues tab), render clean table */}
+            {feeRows.length > 0 ? (
+              <div style={{ overflowX: 'auto', borderRadius: '0.75rem', border: '1.5px solid rgba(217, 119, 6, 0.25)', boxShadow: '0 4px 18px rgba(217, 119, 6, 0.07)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+                  <thead>
+                    <tr style={{ background: 'linear-gradient(135deg, rgba(255, 251, 235, 0.95) 0%, rgba(245, 243, 255, 0.95) 100%)', borderBottom: '2px solid rgba(217, 119, 6, 0.25)', color: '#1e1b4b', fontWeight: 800 }}>
+                      <th style={{ padding: '0.9rem 1rem' }}>Fee Type</th>
+                      <th style={{ padding: '0.9rem 1rem' }}>Total Amount</th>
+                      <th style={{ padding: '0.9rem 1rem' }}>Paid Amount</th>
+                      <th style={{ padding: '0.9rem 1rem' }}>Due Amount</th>
+                      <th style={{ padding: '0.9rem 1rem', textAlign: 'center' }}>Status</th>
+                      <th style={{ padding: '0.9rem 1rem' }}>Deadline</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {feeRows.map((row, idx) => (
+                      <tr 
+                        key={idx} 
+                        style={{ 
+                          borderBottom: '1px solid rgba(0,0,0,0.04)',
+                          background: idx % 2 === 0 ? '#ffffff' : 'rgba(248, 250, 252, 0.6)'
+                        }}
+                      >
+                        <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: '#1e293b' }}>
+                          {row.feeType}
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', color: '#475569', fontWeight: 600 }}>
+                          {row.totalAmount}
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', color: '#059669', fontWeight: 600 }}>
+                          {row.paidAmount}
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', color: row.dueAmount === '₹0' ? '#64748b' : '#dc2626', fontWeight: 700 }}>
+                          {row.dueAmount}
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+                          <StatusBadge status={row.status} />
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', color: '#64748b', fontSize: '0.8rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <Calendar size={13} style={{ color: '#94a3b8' }} />
+                            <span>{row.deadline}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+
+            {/* Footer lines or non-table content (History, Scholarship, etc.) rendered with markdown */}
+            {footerLines.length > 0 && (
+              <div style={{ marginTop: feeRows.length > 0 ? '0.5rem' : '0' }}>
+                <MarkdownView content={footerLines.join('\n')} />
+              </div>
+            )}
+            {feeRows.length === 0 && headerLines.length === 0 && (
+              <MarkdownView content={data} />
+            )}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+          <div style={{ textAlign: 'center', padding: '2.5rem', color: '#94a3b8' }}>
             <AlertCircle style={{ display: 'block', margin: '0 auto 0.5rem', opacity: 0.5 }} />
             No fee information found for student {registerNoInput}.
           </div>

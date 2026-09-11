@@ -25,8 +25,9 @@ class OrchestratorAgent:
         
         # 1. Scheduler Agent Keywords
         scheduler_keywords = [
-            "exam", "test", "internal", "semester", "timetable", "class", "schedule", "subject",
-            "holiday", "vacation", "workshop", "seminar", "placement", "drive", "faculty", "book", "prof"
+            "exam", "test", "internal", "semester", "timetable", "class", "schedule", "shedule", "subject",
+            "holiday", "vacation", "workshop", "seminar", "placement", "drive", "faculty", "book", "prof",
+            "attendance", "absent", "present", "eligibility", "cutoff", "today", "classes"
         ]
         
         # 2. Complaint Agent Keywords
@@ -48,7 +49,7 @@ class OrchestratorAgent:
         
         # 5. Notification Agent Keywords
         notification_keywords = [
-            "announcement", "alert", "notice", "placement notification", "circular", "emergency", "rain alert", "news"
+            "announcement", "announcements", "alert", "notice", "notices", "placement notification", "circular", "circulars", "emergency", "rain alert", "news", "notification", "notifications", "bulletin"
         ]
         
         # 6. Lost & Found Agent Keywords
@@ -68,17 +69,19 @@ class OrchestratorAgent:
         }
         
         # Special manual routing rule overrides if specific words match
+        if "attendance" in q or "eligibility" in q or "cutoff" in q:
+            return "Scheduler Agent"
         if "bonafide" in q or "hall ticket" in q or "study certificate" in q or "conduct certificate" in q:
             return "Document Request Agent"
         if "fee" in q or "dues" in q or "scholarship" in q:
             return "Fee & Payment Agent"
-        if "lost" in q or "found" in q or "id card" in q and "lost" in q:
+        if "lost" in q or "found" in q or ("id card" in q and "lost" in q):
             return "Lost & Found Agent"
         if "not working" in q or "complaint" in q or "fan" in q or "light" in q:
             return "Complaint Agent"
-        if "timetable" in q or "exam" in q or "class" in q:
+        if "timetable" in q or "class" in q or "classes" in q or "schedule" in q or "shedule" in q or "today" in q:
             return "Scheduler Agent"
-        if "placement" in q or "alert" in q or "circular" in q:
+        if "notification" in q or "notifications" in q or "announcement" in q or "bulletin" in q or "placement" in q or "alert" in q or "circular" in q:
             return "Notification Agent"
 
         # Find maximum scored agent

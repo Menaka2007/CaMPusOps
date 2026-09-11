@@ -33,6 +33,12 @@ export const getSubjectDetails = (subject) => {
   if (s.includes("internet of things") || s.includes("iot")) {
     return { code: "CS306", faculty: "Dr. Batcha", venue: "SIMULATION LAB" };
   }
+  if (s === "pe" || s.includes("professional elective")) {
+    return { code: "CS307", faculty: "Dr. Ramakrishnan", venue: "LH-403" };
+  }
+  if (s.includes("ldic")) {
+    return { code: "CS308", faculty: "Dr. Kavitha", venue: "B-Block 105" };
+  }
   
   // 1st Year Mappings
   if (s.includes("technical english")) {
@@ -75,16 +81,37 @@ export const getSubjectDetails = (subject) => {
   if (s.includes("ad hoc")) {
     return { code: "CS402", faculty: "Dr. Kavitha", venue: "LH-402" };
   }
-  if (s.includes("professional elective v") || s.includes("professional elective")) {
+  if (s.includes("professional elective v")) {
     return { code: "CS403", faculty: "Dr. Ramakrishnan", venue: "LH-403" };
   }
   if (s.includes("project phase ii") || s.includes("project work phase 2")) {
     return { code: "CS404", faculty: "Dr. Ramakrishnan", venue: "SEMINAR HALL" };
   }
 
-  // ECE/VLSI/IT/Fallback
-  if (s.includes("vlsi") || s.includes("microcontroller") || s.includes("signal") || s.includes("antenna") || s.includes("cyber") || s.includes("mobile")) {
-    return { code: "EC301", faculty: "Dr. Hariharan", venue: "SIMULATION LAB" };
+  // IT & ECE specific Mappings
+  if (s.includes("cyber security")) {
+    return { code: "IT401", faculty: "Mr. Vignesh", venue: "LAB 4" };
+  }
+  if (s.includes("mobile computing")) {
+    return { code: "IT402", faculty: "Dr. Batcha", venue: "SF08" };
+  }
+  if (s.includes("big data")) {
+    return { code: "IT403", faculty: "Dr. Raj Thilak", venue: "LH-301" };
+  }
+  if (s.includes("basic electrical")) {
+    return { code: "EE101", faculty: "Mrs. Shanthi", venue: "LH-102" };
+  }
+  if (s.includes("vlsi")) {
+    return { code: "EC301", faculty: "Dr. Kavitha", venue: "LH-205" };
+  }
+  if (s.includes("microcontroller")) {
+    return { code: "EC302", faculty: "Dr. Hariharan", venue: "SIMULATION LAB" };
+  }
+  if (s.includes("signal processing") || s.includes("dsp")) {
+    return { code: "EC303", faculty: "Dr. Kavitha", venue: "B-Block 105" };
+  }
+  if (s.includes("antenna")) {
+    return { code: "EC304", faculty: "Dr. Hariharan", venue: "LH-206" };
   }
   
   return { code: "CS310", faculty: "Dr. Hariharan", venue: "SF07" };

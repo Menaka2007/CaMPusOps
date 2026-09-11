@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, BookOpen, UserPlus, RefreshCw, Trash2, Plus, Bell } from 'lucide-react';
 import TimetableGrid from './TimetableGrid';
 
-const SchedulerTab = ({ user }) => {
-  const [activeView, setActiveView] = useState('dashboard'); // dashboard, timetable, exams, holidays, reminders, booking
+const SchedulerTab = ({ user, initialView = 'timetable' }) => {
+  const [activeView, setActiveView] = useState(initialView); // timetable, dashboard, exams, holidays, reminders, booking
   const [data, setData] = useState('');
   const [timetableData, setTimetableData] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Reminder state
@@ -19,14 +20,32 @@ const SchedulerTab = ({ user }) => {
   const [bookingInput, setBookingInput] = useState('');
   const [inBookingSession, setInBookingSession] = useState(false);
 
+  const userRollNo = user?.roll_no || user?.register_number || user?.faculty_id || '717721L109';
+  const userName = user?.name || 'Student';
+
   const fetchSchedulerData = async (viewName) => {
     setLoading(true);
     if (viewName === 'timetable') {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/timetable/student/${user.roll_no}`);
+        const res = await fetch(`http://127.0.0.1:8000/api/timetable/student/${userRollNo}`);
         if (res.ok) {
           const resData = await res.json();
           setTimetableData(resData.timetable || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (viewName === 'events') {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/academic-calendar');
+        if (res.ok) {
+          const resData = await res.json();
+          setCalendarEvents(resData.calendar || []);
         }
       } catch (err) {
         console.error(err);
@@ -47,8 +66,8 @@ const SchedulerTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Scheduler Agent',
           query: query,
-          roll_no: user.roll_no,
-          name: user.name
+          roll_no: userRollNo,
+          name: userName
         })
       });
       const resData = await res.json();
@@ -68,8 +87,8 @@ const SchedulerTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Scheduler Agent',
           query: 'show reminders',
-          roll_no: user.roll_no,
-          name: user.name
+          roll_no: userRollNo,
+          name: userName
         })
       });
       const resData = await res.json();
@@ -102,8 +121,8 @@ const SchedulerTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Scheduler Agent',
           query: `set reminder for ${newReminderTitle} on ${newReminderDate || new Date().toISOString().split('T')[0]} at ${newReminderTime}`,
-          roll_no: user.roll_no,
-          name: user.name
+          roll_no: userRollNo,
+          name: userName
         })
       });
       setNewReminderTitle('');
@@ -121,8 +140,8 @@ const SchedulerTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Scheduler Agent',
           query: `delete reminder ${id}`,
-          roll_no: user.roll_no,
-          name: user.name
+          roll_no: userRollNo,
+          name: userName
         })
       });
       fetchReminders();
@@ -146,8 +165,8 @@ const SchedulerTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Scheduler Agent',
           query: userText,
-          roll_no: user.roll_no,
-          name: user.name
+          roll_no: userRollNo,
+          name: userName
         })
       });
       const resData = await res.json();
@@ -170,8 +189,8 @@ const SchedulerTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Scheduler Agent',
           query: 'book appointment',
-          roll_no: user.roll_no,
-          name: user.name
+          roll_no: userRollNo,
+          name: userName
         })
       });
       const resData = await res.json();
@@ -210,8 +229,9 @@ const SchedulerTab = ({ user }) => {
       {/* View Selectors */}
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
         {[
-          { id: 'dashboard', label: 'Overview', icon: Calendar },
-          { id: 'timetable', label: 'Timetable', icon: Clock },
+          { id: 'timetable', label: 'Weekly Timetable', icon: Clock },
+          { id: 'dashboard', label: 'Daily Overview', icon: Calendar },
+          { id: 'events', label: 'Campus Events & Calendar', icon: Calendar },
           { id: 'exams', label: 'Exams', icon: BookOpen },
           { id: 'reminders', label: 'My Reminders', icon: Bell },
           { id: 'booking', label: 'Book Faculty', icon: UserPlus }
@@ -365,6 +385,73 @@ const SchedulerTab = ({ user }) => {
                 </button>
               </form>
             </div>
+          )}
+        </div>
+      ) : activeView === 'events' ? (
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary)' }}>
+                📅 Official Academic Calendar & Events
+              </h3>
+              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                Synchronized live campus events, holidays, and academic schedules
+              </p>
+            </div>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, background: 'rgba(109, 40, 217, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.6rem', borderRadius: '9999px' }}>
+              {calendarEvents.length} Events Listed
+            </span>
+          </div>
+
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '160px' }}>
+              <RefreshCw className="animate-spin" size={26} style={{ color: 'var(--primary)' }} />
+            </div>
+          ) : calendarEvents.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+              {calendarEvents.map(ev => {
+                const cleanTitle = (ev.title || '').split(' |tags:')[0].split(' |category:')[0];
+                const isHoliday = ev.type === 'holiday';
+                const isExam = ev.type === 'exam';
+                
+                return (
+                  <div 
+                    key={ev.id} 
+                    className="glass-card" 
+                    style={{ 
+                      padding: '1.25rem', 
+                      background: isHoliday ? 'rgba(239, 68, 68, 0.04)' : isExam ? 'rgba(245, 158, 11, 0.04)' : '#fff',
+                      border: isHoliday ? '1px solid rgba(239, 68, 68, 0.2)' : isExam ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid #f1f5f9',
+                      borderLeft: `4px solid ${isHoliday ? '#ef4444' : isExam ? '#f59e0b' : 'var(--primary)'}`,
+                      borderRadius: '0.75rem',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                      <span style={{ 
+                        fontSize: '0.65rem', 
+                        padding: '0.2rem 0.5rem', 
+                        borderRadius: '0.35rem', 
+                        background: isHoliday ? 'rgba(239, 68, 68, 0.12)' : isExam ? 'rgba(245, 158, 11, 0.12)' : 'rgba(109, 40, 217, 0.1)', 
+                        color: isHoliday ? '#ef4444' : isExam ? '#d97706' : 'var(--primary)', 
+                        fontWeight: 800,
+                        textTransform: 'uppercase'
+                      }}>
+                        {ev.type}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+                        📅 {ev.date}
+                      </span>
+                    </div>
+                    <h4 style={{ margin: '0.25rem 0 0 0', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
+                      {cleanTitle}
+                    </h4>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem 0' }}>No calendar events scheduled.</p>
           )}
         </div>
       ) : activeView === 'timetable' ? (

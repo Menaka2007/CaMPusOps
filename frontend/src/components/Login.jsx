@@ -37,6 +37,7 @@ const Login = ({ onLoginSuccess }) => {
     if (role === 'student') {
       const trimmedName = fullName.trim();
       const allowedNames = [
+        "Aravind Swamy",
         "J. Samhitha",
         "S. Chandrika",
         "Menaka S",
@@ -122,7 +123,7 @@ const Login = ({ onLoginSuccess }) => {
       <div className="text-center mb-8 animate-fade-in" style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 1.5rem', background: 'rgba(109, 40, 217, 0.08)', borderRadius: '9999px', border: '1px solid rgba(109, 40, 217, 0.15)', marginBottom: '1rem' }}>
           <Sparkles size={16} className="text-purple-600" style={{ color: 'var(--primary)' }} />
-          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)', letterSpacing: '0.05em' }}>SRI ESWAR COLLEGE OF ENGINEERING</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)', letterSpacing: '0.05em' }}>SRI ESHWAR COLLEGE OF ENGINEERING</span>
         </div>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, background: 'linear-gradient(to right, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: '0.5rem 0' }}>
           Smart Campus Assistant
@@ -291,7 +292,7 @@ const Login = ({ onLoginSuccess }) => {
           </form>
 
           <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8' }}>
-            Sri Eswar College of Engineering | Smart Campus Assistant System
+            Sri Eshwar College of Engineering | Smart Campus Assistant System
           </div>
         </div>
       )}

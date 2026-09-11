@@ -32,19 +32,43 @@ class SchedulerAgent(BaseAgent):
         if "book" in q or "appointment" in q or "consultation" in q or "meet" in q:
             return self.initiate_booking(query, roll_no, student_name)
 
+        # 4.5 Today's Classes & Daily Schedule Check (Interactive AI)
+        is_today_query = (
+            ("today" in q and any(w in q for w in ["shedule", "schedule", "class", "classes", "timetable", "timetbl", "period", "routine", "what", "how", "plan"]))
+            or any(phrase in q for phrase in [
+                "shedule today", "schedule today", "today schedule", "today shedule", 
+                "today's schedule", "todays schedule", "today's shedule", "todays shedule",
+                "classes today", "today classes", "today's classes", "todays classes",
+                "class today", "today class", "today's class", "todays class",
+                "what is today", "what do i have today", "what class do i have", "my schedule today",
+                "today routine", "today periods", "what is the shedule today", "what is the schedule today"
+            ])
+            or (any(d in q for d in ["monday", "tuesday", "wednesday", "thursday", "friday"]) and any(w in q for w in ["class", "classes", "schedule", "shedule", "timetable", "period"]))
+        )
+        if is_today_query and not any(k in q for k in ["exam", "holiday", "attendance", "eligibility", "cutoff"]):
+            return self.get_today_classes_interactive(roll_no, student_name, query)
+
         # 5. Smart Dashboard Check
-        if q in ["dashboard", "scheduler", "today's schedule", "today schedule", "my schedule", "what is today's schedule?"]:
+        if q in ["dashboard", "scheduler", "my schedule"]:
             return self.get_smart_dashboard(roll_no, student_name)
+
+        # 5.5 Attendance & Exam Eligibility Check
+        if "attendance" in q or "eligibility" in q or "cutoff" in q or "classes attended" in q or "absent" in q:
+            return self.get_attendance_summary(roll_no, student_name, query)
 
         # 6. Specific Queries & fallbacks
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
-        # Resolve student info
-        cursor.execute("SELECT dept, year FROM students WHERE roll_no = ?", (roll_no,))
+        # Resolve student / staff info
+        cursor.execute("SELECT dept, year, role FROM students WHERE roll_no = ?", (roll_no,))
         student = cursor.fetchone()
-        dept = student["dept"] if student else "CSE"
-        year = student["year"] if student else 3
+        dept = student["dept"] if student and student["dept"] else "CSE"
+        raw_year = student["year"] if student and student["year"] is not None else 3
+        role = student["role"] if student and student["role"] else ("staff" if str(roll_no).startswith("STAFF") else "student")
+        
+        is_staff = (role == "staff" or raw_year == 0 or str(roll_no).startswith("STAFF"))
+        year = raw_year if raw_year > 0 else 3
 
         # Exams
         if "exam" in q or "test" in q or "assessment" in q:
@@ -60,20 +84,50 @@ class SchedulerAgent(BaseAgent):
             return res
         
         # Timetable
-        elif "timetable" in q or "class" in q or "schedule" in q:
-            cursor.execute("SELECT day, slot_1, slot_2, slot_3, slot_4 FROM timetable WHERE dept = ? AND year = ?", (dept, year))
-            slots = cursor.fetchall()
-            if not slots:
-                return f"No timetable found for Department of {dept}, Year {year}."
-            
-            res = f"### 📝 Class Timetable (Department: {dept}, Year: {year})\n"
-            for day_row in slots:
-                res += f"- **{day_row['day']}**:\n"
-                res += f"  - Slot 1: {day_row['slot_1']}{self.get_subject_details(day_row['slot_1'])}\n"
-                res += f"  - Slot 2: {day_row['slot_2']}{self.get_subject_details(day_row['slot_2'])}\n"
-                res += f"  - Slot 3: {day_row['slot_3']}{self.get_subject_details(day_row['slot_3'])}\n"
-                res += f"  - Slot 4: {day_row['slot_4']}{self.get_subject_details(day_row['slot_4'])}\n"
-            return res
+        elif "timetable" in q or "class" in q or "classes" in q or "schedule" in q or "shedule" in q:
+            # Check if a specific year was requested in query (e.g. "year 1", "year 3", "3rd year")
+            year_match = re.search(r'\b(?:year\s*([1-4])|([1-4])(?:st|nd|rd|th)?\s*year)\b', q)
+            requested_year = int(year_match.group(1) or year_match.group(2)) if year_match else None
+
+            if is_staff and not requested_year:
+                # For staff members, display all teaching timetables for their department
+                cursor.execute("SELECT year, day, slot_1, slot_2, slot_3, slot_4, slot_5, slot_6 FROM timetable WHERE dept = ? ORDER BY year, id", (dept,))
+                all_slots = cursor.fetchall()
+                if not all_slots:
+                    return f"No timetable entries found for Department of {dept}."
+                
+                years_map = {}
+                for r in all_slots:
+                    yr = r['year']
+                    if yr not in years_map:
+                        years_map[yr] = []
+                    years_map[yr].append(r)
+                
+                res = f"### 📝 Department Teaching Timetable (Department: {dept})\n"
+                for yr in sorted(years_map.keys()):
+                    res += f"#### Year {yr} ({dept})\n"
+                    for day_row in years_map[yr]:
+                        res += f"- **{day_row['day']}**:\n"
+                        for i in range(1, 7):
+                            s_val = day_row[f'slot_{i}']
+                            if s_val:
+                                res += f"  - Slot {i}: {s_val}{self.get_subject_details(s_val)}\n"
+                return res
+            else:
+                target_year = requested_year if requested_year else year
+                cursor.execute("SELECT day, slot_1, slot_2, slot_3, slot_4, slot_5, slot_6 FROM timetable WHERE dept = ? AND year = ?", (dept, target_year))
+                slots = cursor.fetchall()
+                if not slots:
+                    return f"No timetable found for Department of {dept}, Year {target_year}."
+                
+                res = f"### 📝 Class Timetable (Department: {dept}, Year: {target_year})\n"
+                for day_row in slots:
+                    res += f"- **{day_row['day']}**:\n"
+                    for i in range(1, 7):
+                        s_val = day_row[f'slot_{i}']
+                        if s_val:
+                            res += f"  - Slot {i}: {s_val}{self.get_subject_details(s_val)}\n"
+                return res
             
         # Holidays
         elif "holiday" in q or "vacation" in q:
@@ -102,7 +156,8 @@ class SchedulerAgent(BaseAgent):
         cal = cursor.fetchall()
         res = "### 📅 Sri Eshwar Academic Calendar & Planner\n"
         for item in cal:
-            res += f"- **{item['title']}** ({item['type'].capitalize()}): {item['date']}\n"
+            clean_title = item['title'].split(" |tags:")[0].split(" |category:")[0].strip()
+            res += f"- **{clean_title}** ({item['type'].capitalize()}): {item['date']}\n"
         return res
 
     def check_redirection(self, q: str) -> str:
@@ -126,17 +181,64 @@ class SchedulerAgent(BaseAgent):
         if not subject:
             return ""
         s = subject.lower()
-        if "data science" in s or "machine learning" in s or "compiler" in s or "cloud" in s:
-            return " | Faculty: Dr. Ramakrishnan (CSE) | Venue: A-Block 302"
-        elif "vlsi" in s or "microcontroller" in s or "signal processing" in s or "antenna" in s:
-            return " | Faculty: Dr. Kavitha (ECE) | Venue: B-Block 105"
-        elif "cyber" in s or "mobile" in s or "internet of things" in s or "iot" in s:
-            return " | Faculty: Mr. Vignesh (IT) | Venue: A-Block 410"
-        elif "shanthi" in s or "eee" in s or "circuits" in s:
-            return " | Faculty: Mrs. Shanthi (EEE) | Venue: C-Block 201"
-        elif "skills" in s or "aptitude" in s:
-            return " | Faculty: Training Dept | Venue: Placement Cell"
-        return " | Faculty: Guest Lecturer | Venue: Seminar Hall"
+        
+        # 3rd Year CSE Mappings
+        if "data science" in s:
+            return " | Faculty: Dr. Raj Thilak | Venue: SF07"
+        elif "compiler" in s:
+            return " | Faculty: Dr. Anbuarasu | Venue: TF 17"
+        elif "machine learning" in s:
+            return " | Faculty: Dr. Geetha | Venue: SF07"
+        elif "cloud" in s:
+            return " | Faculty: Dr. Guna Priya | Venue: TF 17"
+        elif "soft skills" in s or "aptitude" in s or "training" in s:
+            return " | Faculty: Mr. Premkumar | Venue: CODE STUDIO"
+        elif "internet of things" in s or "iot" in s:
+            return " | Faculty: Dr. Batcha | Venue: SIMULATION LAB"
+        elif s == "pe" or "professional elective" in s:
+            return " | Faculty: Dr. Ramakrishnan | Venue: LH-403"
+        elif "ldic" in s:
+            return " | Faculty: Dr. Kavitha | Venue: B-Block 105"
+            
+        # 1st Year Mappings
+        elif "technical english" in s:
+            return " | Faculty: Dr. Geetha | Venue: LH-101"
+        elif "engineering math i" in s:
+            return " | Faculty: Dr. Srinivasan | Venue: LH-101"
+        elif "engineering physics" in s:
+            return " | Faculty: Dr. Radhakrishnan | Venue: PHYSICS LAB"
+        elif "engineering chemistry" in s:
+            return " | Faculty: Dr. Saravanan | Venue: CHEMISTRY LAB"
+        elif "programming in c" in s or "c programming lab" in s:
+            return " | Faculty: Mr. Vignesh | Venue: LAB 1"
+        elif "python programming" in s:
+            return " | Faculty: Dr. Balasubramanian | Venue: LAB 2"
+
+        # 2nd Year Mappings
+        elif "discrete mathematics" in s:
+            return " | Faculty: Dr. Srinivasan | Venue: LH-201"
+        elif "data structures" in s:
+            return " | Faculty: Dr. Ramakrishnan | Venue: LAB 3"
+        elif "digital principles" in s:
+            return " | Faculty: Dr. Kavitha | Venue: LH-202"
+        elif "oops using c++" in s or "c++ programming lab" in s:
+            return " | Faculty: Mr. Vignesh | Venue: LAB 4"
+
+        # 4th Year Mappings
+        elif "cryptography" in s:
+            return " | Faculty: Dr. Balasubramanian | Venue: LH-401"
+        elif "ad hoc" in s:
+            return " | Faculty: Dr. Kavitha | Venue: LH-402"
+        elif "professional elective" in s or s == "pe":
+            return " | Faculty: Dr. Ramakrishnan | Venue: LH-403"
+        elif "project" in s:
+            return " | Faculty: Dr. Ramakrishnan | Venue: SEMINAR HALL"
+
+        # ECE/VLSI/IT/Fallback
+        elif "vlsi" in s or "microcontroller" in s or "signal" in s or "antenna" in s or "cyber" in s or "mobile" in s:
+            return " | Faculty: Dr. Hariharan | Venue: SIMULATION LAB"
+            
+        return " | Faculty: Dr. Hariharan | Venue: SF07"
 
     def get_smart_dashboard(self, roll_no: str, student_name: str) -> str:
         conn = self.get_db_connection()
@@ -463,3 +565,212 @@ class SchedulerAgent(BaseAgent):
                 return "Please confirm by replying with **yes** or **no**."
 
         return self.ask_next_booking_question(roll_no)
+
+    def get_attendance_summary(self, roll_no: str, student_name: str, query: str) -> str:
+        q = query.lower()
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        # Check student details
+        cursor.execute("SELECT name, dept, year FROM students WHERE roll_no = ?", (roll_no,))
+        student = cursor.fetchone()
+        display_name = student["name"] if student and student["name"] else student_name
+        dept = student["dept"] if student and student["dept"] else "CSE"
+
+        cursor.execute("""
+            SELECT subject, status, date, slot_index
+            FROM attendance
+            WHERE roll_no = ?
+            ORDER BY date DESC
+        """, (roll_no,))
+        rows = cursor.fetchall()
+
+        if not rows:
+            return (
+                f"### 📊 Attendance Summary for **{display_name}** ({roll_no})\n\n"
+                f"- **Department**: {dept}\n"
+                f"- **Overall Attendance**: 85.0% *(Default / Good standing)*\n"
+                f"- **Exam Eligibility**: ✅ **Eligible** (Above statutory 75% cutoff)\n\n"
+                f"You can view your detailed real-time logs under the **Attendance & Eligibility** tab on your dashboard!"
+            )
+
+        total_classes = len(rows)
+        attended_classes = sum(1 for r in rows if r["status"].lower() == "present")
+        overall_pct = round((attended_classes / total_classes * 100), 1) if total_classes > 0 else 100.0
+
+        # Group by subject
+        subjects_map = {}
+        for r in rows:
+            sub = r["subject"]
+            if sub not in subjects_map:
+                subjects_map[sub] = {"total": 0, "attended": 0}
+            subjects_map[sub]["total"] += 1
+            if r["status"].lower() == "present":
+                subjects_map[sub]["attended"] += 1
+
+        # Check if user requested a specific subject
+        target_subject = None
+        for sub in subjects_map.keys():
+            sub_clean = sub.lower()
+            if sub_clean in q:
+                target_subject = sub
+                break
+            # Distinctive words check (length > 3)
+            words = [w for w in sub_clean.split() if len(w) > 3]
+            if any(w in q for w in words):
+                target_subject = sub
+                break
+
+        if target_subject:
+            stats = subjects_map[target_subject]
+            t = stats["total"]
+            a = stats["attended"]
+            m = t - a
+            pct = round((a / t * 100), 1) if t > 0 else 100.0
+            needed = max(0, 3 * t - 4 * a) if pct < 75.0 else 0
+
+            status_badge = "🟢 Safe (>=80%)" if pct >= 80.0 else ("🟡 Warning (75-79%)" if pct >= 75.0 else "🔴 Critical (<75%)")
+            res = (
+                f"### 📚 Subject Attendance: **{target_subject}**\n\n"
+                f"- **Student**: {display_name} ({roll_no})\n"
+                f"- **Attended**: {a} / {t} classes ({m} missed)\n"
+                f"- **Attendance Percentage**: **{pct}%** ({status_badge})\n"
+            )
+            if pct < 75.0:
+                res += (
+                    f"\n⚠️ **Statutory Cutoff Alert (< 75%)**:\n"
+                    f"Your attendance in this subject is below the university exam threshold. "
+                    f"You must attend the next **{needed} consecutive classes** to restore your attendance to at least 75%."
+                )
+            else:
+                res += f"\n✅ **Exam Eligibility**: You currently meet the statutory 75% cutoff for this subject."
+            return res
+
+        # General attendance overview across all subjects
+        low_subjects = []
+        for sub, stats in subjects_map.items():
+            pct = round((stats["attended"] / stats["total"] * 100), 1) if stats["total"] > 0 else 100.0
+            if pct < 75.0:
+                low_subjects.append((sub, pct, max(0, 3 * stats["total"] - 4 * stats["attended"])))
+
+        res = (
+            f"### 📊 Attendance & Exam Eligibility Report\n\n"
+            f"**Student**: {display_name} | **Roll No**: {roll_no} | **Dept**: {dept}\n\n"
+            f"- **Overall Attendance**: **{overall_pct}%** ({attended_classes}/{total_classes} classes attended)\n"
+        )
+
+        if low_subjects:
+            res += f"- **Exam Eligibility Status**: ⚠️ **At Risk (< 75% in {len(low_subjects)} subject{'s' if len(low_subjects) > 1 else ''})**\n\n"
+            res += f"#### ⚠️ Subjects Requiring Immediate Attention:\n"
+            for sub, pct, needed in low_subjects:
+                res += f"- **{sub}**: {pct}% (Need **{needed}** more consecutive classes for 75% cutoff)\n"
+            res += "\n"
+        else:
+            res += f"- **Exam Eligibility Status**: ✅ **Eligible** (All subjects meet the statutory 75% cutoff threshold)\n\n"
+
+        res += "#### 📋 Subject Breakdown:\n"
+        res += "| Subject | Attended / Total | Percentage | Status |\n"
+        res += "| :--- | :--- | :--- | :--- |\n"
+        for sub, stats in subjects_map.items():
+            t = stats["total"]
+            a = stats["attended"]
+            pct = round((a / t * 100), 1) if t > 0 else 100.0
+            st = "Safe (>=80%)" if pct >= 80.0 else ("Warning (75-79%)" if pct >= 75.0 else "Critical (<75%)")
+            res += f"| {sub} | {a} / {t} | {pct}% | {st} |\n"
+
+        res += "\n💡 *Tip: Check your live session log in the new **Attendance & Eligibility** tab on your dashboard.*"
+        return res
+
+    def get_today_classes_interactive(self, roll_no: str, student_name: str, query: str) -> str:
+        q = query.lower()
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        # Resolve student info
+        cursor.execute("SELECT dept, year, role, name FROM students WHERE roll_no = ?", (roll_no,))
+        student = cursor.fetchone()
+        display_name = student["name"] if student and student["name"] else student_name
+        dept = student["dept"] if student and student["dept"] else "CSE"
+        raw_year = student["year"] if student and student["year"] is not None else 1
+        year = raw_year if raw_year > 0 else 1
+
+        # Determine target day
+        days_map = {
+            "monday": "Monday",
+            "tuesday": "Tuesday",
+            "wednesday": "Wednesday",
+            "thursday": "Thursday",
+            "friday": "Friday",
+            "saturday": "Saturday",
+            "sunday": "Sunday"
+        }
+        target_day = None
+        for k, v in days_map.items():
+            if k in q:
+                target_day = v
+                break
+
+        current_day = datetime.datetime.now().strftime("%A")
+        day_to_query = target_day if target_day else current_day
+
+        is_weekend = day_to_query in ["Saturday", "Sunday"]
+        if is_weekend:
+            day_to_query = "Monday"
+            header = f"### 🏖️ Weekend Notice ({current_day})\n"
+            header += f"No regular theory classes are scheduled today. Here is your upcoming **Monday** class schedule:\n\n"
+        else:
+            header = f"### 📚 Today's Class Schedule ({day_to_query})\n\n"
+
+        cursor.execute(
+            "SELECT slot_1, slot_2, slot_3, slot_4 FROM timetable WHERE dept = ? AND year = ? AND day = ?",
+            (dept, year, day_to_query)
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            return (
+                f"### 📅 Schedule for {day_to_query}\n\n"
+                f"No classes scheduled for **{dept}** (Year {year}) on **{day_to_query}**.\n\n"
+                f"- [Action: Show Full Weekly Timetable]\n"
+                f"- [Action: Check My Attendance]\n"
+                f"- [Action: Book Faculty Appointment]"
+            )
+
+        slot_timings = [
+            ("Slot 1", "09:00 AM – 10:30 AM", row["slot_1"]),
+            ("Slot 2", "10:30 AM – 12:00 PM", row["slot_2"]),
+            ("Slot 3", "01:00 PM – 02:30 PM", row["slot_3"]),
+            ("Slot 4", "02:30 PM – 04:00 PM", row["slot_4"]),
+        ]
+
+        res = header
+        res += f"**Student**: {display_name} | **Dept**: {dept} | **Year**: {year}\n\n"
+
+        for slot_num, time_str, sub in slot_timings:
+            if not sub:
+                continue
+            details = self.get_subject_details(sub)
+            faculty_name = ""
+            venue_name = ""
+            if details:
+                parts = details.split("|")
+                for p in parts:
+                    if "Faculty:" in p:
+                        faculty_name = p.replace("Faculty:", "").strip()
+                    if "Venue:" in p:
+                        venue_name = p.replace("Venue:", "").strip()
+
+            res += f"- **{slot_num} ({time_str})**:\n"
+            res += f"  📘 **{sub}**\n"
+            if faculty_name:
+                res += f"  👨‍🏫 Faculty: **{faculty_name}**\n"
+            if venue_name:
+                res += f"  📍 Venue: `{venue_name}`\n"
+            res += "\n"
+
+        res += "---\n"
+        res += "💡 **Interactive Quick Actions**:\n"
+        res += "- [Action: Show Full Weekly Timetable]\n"
+        res += "- [Action: Check My Attendance]\n"
+        res += "- [Action: Book Faculty Appointment]"
+        return res

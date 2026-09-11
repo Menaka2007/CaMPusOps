@@ -26,7 +26,7 @@ class NotificationAgent(BaseAgent):
             category = "teacher_notice"
         elif "student" in q or "post" in q or "union" in q:
             category = "student_post"
-        elif "circular" in q or "announcement" in q or "notice" in q:
+        elif q == "circular" or "circulars" in q:
             category = "circular"
             
         if category:
@@ -54,6 +54,7 @@ class NotificationAgent(BaseAgent):
             
             sender_role_display = "Teacher" if r['sender_role'] == 'teacher' else "Student" if r['sender_role'] == 'student' else "Admin"
             sender_info = f"Posted by: {r['sender_name']} ({sender_role_display})"
+            clean_title = r['title'].split(" |tags:")[0].split(" |category:")[0].strip()
             
-            res += f"#### {cat_emoji} {r['title']} ({r['date']})\n{sender_info}\n{r['content']}\n\n---\n"
+            res += f"#### {cat_emoji} {clean_title} ({r['date']})\n{sender_info}\n{r['content']}\n\n---\n"
         return res

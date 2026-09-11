@@ -4,6 +4,10 @@ import {
   Download, Search, Bell, Moon, Sun, ShieldAlert, GraduationCap, Briefcase
 } from 'lucide-react';
 import { getSubjectDetails } from './TimetableGrid';
+import FloatingAIChatbot from './FloatingAIChatbot';
+import StatusBadge from './StatusBadge';
+import MarkdownView from './MarkdownView';
+
 
 const StaffDashboard = ({ user, onLogout }) => {
   const [timetable, setTimetable] = useState([]);
@@ -164,19 +168,45 @@ const StaffDashboard = ({ user, onLogout }) => {
   const dept = user.dept || 'CSE';
 
   const fetchStudentsForAttendance = async (year) => {
+    const defaultStudentList = [
+      { roll_no: "717721L101", name: "Aravind Swamy" },
+      { roll_no: "717721L102", name: "J. Samhitha" },
+      { roll_no: "717721L103", name: "Vinisha" },
+      { roll_no: "717721L104", name: "Anushya" },
+      { roll_no: "717721L105", name: "Varsha" },
+      { roll_no: "717721L106", name: "Kanishka" },
+      { roll_no: "717721L107", name: "Prega" },
+      { roll_no: "717721L108", name: "Akshaya" },
+      { roll_no: "717721L109", name: "Madhumita" },
+      { roll_no: "717721L110", name: "S. Chandrika" },
+      { roll_no: "717721L111", name: "Menaka S" }
+    ];
+
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/staff/students?dept=${dept}&year=${year}`);
       if (res.ok) {
-        const data = await res.json();
+        let data = await res.json();
+        if (!data || data.length === 0) {
+          data = defaultStudentList;
+        }
         setStudents(data);
         const initial = {};
         data.forEach(s => {
           initial[s.roll_no] = 'present';
         });
         setAttendanceRecords(initial);
+      } else {
+        setStudents(defaultStudentList);
+        const initial = {};
+        defaultStudentList.forEach(s => { initial[s.roll_no] = 'present'; });
+        setAttendanceRecords(initial);
       }
     } catch (error) {
       console.error("Error fetching students:", error);
+      setStudents(defaultStudentList);
+      const initial = {};
+      defaultStudentList.forEach(s => { initial[s.roll_no] = 'present'; });
+      setAttendanceRecords(initial);
     }
   };
 
@@ -402,13 +432,13 @@ const StaffDashboard = ({ user, onLogout }) => {
       <aside className="glass-card" style={{ width: '300px', margin: '1rem', marginRight: '0', display: 'flex', flexDirection: 'column', padding: '1.5rem', borderRadius: '1.25rem', height: 'calc(100vh - 2rem)', position: 'sticky', top: '1rem', boxSizing: 'border-box' }}>
         
         {/* Logo / Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(109, 40, 217, 0.1)', marginBottom: '1.5rem' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifycontent: 'center', color: '#fff', paddingLeft: '9px', boxSizing: 'border-box' }}>
-            <GraduationCap size={22} style={{ color: '#fff' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(217, 119, 6, 0.2)', marginBottom: '1.5rem' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #1e1b4b, #4338ca)', border: '1.5px solid rgba(217, 119, 6, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fbbf24', fontSize: '1.2rem', boxSizing: 'border-box' }}>
+            👑
           </div>
           <div>
-            <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, background: 'linear-gradient(to right, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Smart Schedule</h4>
-            <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>CAMPUS AGENT</span>
+            <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: '#1e1b4b' }}>Royal Faculty Hub</h4>
+            <span style={{ fontSize: '0.68rem', color: '#b45309', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' }}>SRI ESHWAR AUTONOMOUS SUITE</span>
           </div>
         </div>
 
@@ -516,7 +546,7 @@ const StaffDashboard = ({ user, onLogout }) => {
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ flexGrow: 1, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', boxSizing: 'border-box', overflowY: 'auto' }}>
+      <main style={{ flexGrow: 1, minWidth: 0, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', boxSizing: 'border-box', overflowY: 'auto' }}>
         
         {/* Top Header */}
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
@@ -1141,7 +1171,9 @@ const StaffDashboard = ({ user, onLogout }) => {
                         <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{n.date}</span>
                       </div>
                       <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', fontWeight: 700, color: 'var(--primary)' }}>{n.title}</h4>
-                      <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: '#475569', whiteSpace: 'pre-line' }}>{n.content}</p>
+                      <div style={{ margin: '0 0 0.5rem 0', fontSize: '0.825rem' }}>
+                        <MarkdownView content={n.content} />
+                      </div>
                       <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>
                         By: {n.sender_name} ({n.sender_role})
                       </div>
@@ -1159,6 +1191,9 @@ const StaffDashboard = ({ user, onLogout }) => {
         )}
 
       </main>
+
+      {/* Docked AI Guard Panel */}
+      <FloatingAIChatbot user={user} isDocked={true} />
 
       {/* Add Slot Modal */}
       {isModalOpen && (

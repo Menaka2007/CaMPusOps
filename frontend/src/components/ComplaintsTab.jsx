@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquareCode, Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { MessageSquareCode, Plus, AlertCircle, RefreshCw, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import StatusBadge from './StatusBadge';
+import MarkdownView from './MarkdownView';
 
 const ComplaintsTab = ({ user }) => {
   const [complaints, setComplaints] = useState('');
@@ -11,6 +13,8 @@ const ComplaintsTab = ({ user }) => {
   const [photo, setPhoto] = useState(null);
   const [venue, setVenue] = useState('');
 
+  const userRollNo = user?.roll_no || user?.register_number || user?.faculty_id || '717721L101';
+
   const fetchComplaints = async () => {
     setLoading(true);
     try {
@@ -20,12 +24,12 @@ const ComplaintsTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Complaint Agent',
           query: 'status',
-          roll_no: user.roll_no,
-          name: user.name
+          roll_no: userRollNo,
+          name: user?.name || ''
         })
       });
       const data = await res.json();
-      setComplaints(data.response);
+      setComplaints(data.response || '');
     } catch (err) {
       console.error(err);
     } finally {
@@ -55,7 +59,6 @@ const ComplaintsTab = ({ user }) => {
     setSubmitting(true);
     setStatusMessage('');
     // Construct query that triggers backend complaint registration
-    // Needs to contain category/location (classroom, hostel, bus, etc.), venue and issue description
     const venueText = venue.trim() ? ` at ${venue.trim()}` : '';
     const formattedQuery = `complaint about ${category}${venueText}: ${description}`;
 
@@ -66,18 +69,22 @@ const ComplaintsTab = ({ user }) => {
         body: JSON.stringify({
           agent_name: 'Complaint Agent',
           query: formattedQuery,
-          roll_no: user.roll_no,
-          name: user.name,
+          roll_no: userRollNo,
+          name: user?.name || '',
           photo: photo
         })
       });
       const data = await res.json();
-      setStatusMessage(data.response);
-      setDescription('');
-      setVenue('');
-      setPhoto(null);
-      const fileInput = document.getElementById('complaint-photo-input');
-      if (fileInput) fileInput.value = '';
+      setStatusMessage(data.response || '');
+      
+      // If complaint was genuine & registered, clear the description input
+      if (data.response && !data.response.includes('AI Moderation Alert')) {
+        setDescription('');
+        setVenue('');
+        setPhoto(null);
+        const fileInput = document.getElementById('complaint-photo-input');
+        if (fileInput) fileInput.value = '';
+      }
       fetchComplaints();
     } catch (err) {
       console.error(err);
@@ -86,6 +93,9 @@ const ComplaintsTab = ({ user }) => {
       setSubmitting(false);
     }
   };
+
+  const hasHistory = complaints && (complaints.includes('- ') || complaints.includes('Status:'));
+  const isAiRejected = statusMessage.includes('AI Moderation Alert') || statusMessage.includes('Auto-Filtered');
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -105,14 +115,14 @@ const ComplaintsTab = ({ user }) => {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         {/* File Complaint Form */}
         <div className="glass-card" style={{ padding: '1.5rem' }}>
-          <h4 style={{ margin: '0 0 1rem 0', fontWeight: 600 }}>File a New Complaint</h4>
+          <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700, color: '#1e293b' }}>File a New Complaint</h4>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', color: '#475569' }}>Category / Department</label>
               <select 
                 value={category} 
                 onChange={(e) => setCategory(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid rgba(109, 40, 217, 0.2)', outline: 'none' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid rgba(109, 40, 217, 0.2)', outline: 'none', background: '#fff', fontSize: '0.9rem' }}
               >
                 <option value="classroom">Classroom Maintenance</option>
                 <option value="hostel">Hostel Block</option>
@@ -127,7 +137,7 @@ const ComplaintsTab = ({ user }) => {
                 value={venue} 
                 onChange={(e) => setVenue(e.target.value)}
                 placeholder="e.g. Room 304, Block C, Bus 12"
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid rgba(109, 40, 217, 0.2)', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid rgba(109, 40, 217, 0.2)', outline: 'none', boxSizing: 'border-box', background: '#fff', fontSize: '0.9rem' }}
               />
             </div>
             <div>
@@ -138,7 +148,7 @@ const ComplaintsTab = ({ user }) => {
                 placeholder="e.g. AC remote missing in Room 304, leak in Block C bathroom..."
                 rows={4}
                 required
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid rgba(109, 40, 217, 0.2)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid rgba(109, 40, 217, 0.2)', outline: 'none', resize: 'vertical', boxSizing: 'border-box', background: '#fff', fontSize: '0.9rem' }}
               />
             </div>
             <div>
@@ -170,7 +180,7 @@ const ComplaintsTab = ({ user }) => {
             <button 
               type="submit" 
               disabled={submitting}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 4px 12px rgba(109, 40, 217, 0.15)' }}
             >
               {submitting ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={16} />}
               Submit Complaint
@@ -178,52 +188,97 @@ const ComplaintsTab = ({ user }) => {
           </form>
 
           {statusMessage && (
-            <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '0.5rem', background: 'rgba(5, 150, 105, 0.08)', border: '1px solid rgba(5, 150, 105, 0.2)', fontSize: '0.9rem', color: '#065f46', whiteSpace: 'pre-line' }}>
-              {statusMessage}
+            <div 
+              style={{ 
+                marginTop: '1rem', 
+                padding: '1rem', 
+                borderRadius: '0.75rem', 
+                background: isAiRejected ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)', 
+                border: isAiRejected ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)', 
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, marginBottom: '0.5rem', fontSize: '0.95rem', color: isAiRejected ? '#b91c1c' : '#047857' }}>
+                {isAiRejected ? <ShieldAlert size={18} style={{ color: '#ef4444' }} /> : <CheckCircle2 size={18} style={{ color: '#10b981' }} />}
+                {isAiRejected ? 'AI Safety Guard Auto-Filtered' : 'AI Verified & Logged'}
+              </div>
+              <MarkdownView content={statusMessage} />
             </div>
           )}
         </div>
 
-        {/* Complaints History */}
-        <div className="glass-card" style={{ padding: '1.5rem', maxHeight: '450px', overflowY: 'auto' }}>
-          <h4 style={{ margin: '0 0 1rem 0', fontWeight: 600 }}>Active Complaints History</h4>
+        {/* Complaints History & Activity Feed */}
+        <div className="glass-card" style={{ padding: '1.5rem', maxHeight: '520px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h4 style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>Active Complaints Activity Feed</h4>
+            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Live Tracker</span>
+          </div>
+
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1, padding: '2rem' }}>
               <RefreshCw className="animate-spin" style={{ color: 'var(--primary)' }} />
             </div>
-          ) : complaints ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          ) : hasHistory ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', overflowY: 'auto', paddingRight: '0.25rem' }}>
               {complaints.split('\n').map((line, i) => {
-                if (line.startsWith('### ')) return null;
-                if (line.startsWith('- ')) {
-                  const cleaned = line.replace('- ', '');
-                  const isPending = cleaned.includes('Pending');
-                  const isInProgress = cleaned.includes('In Progress');
-                  const statusBg = isPending ? 'rgba(217, 119, 6, 0.1)' : isInProgress ? 'rgba(37, 99, 235, 0.1)' : 'rgba(5, 150, 105, 0.1)';
-                  const statusColor = isPending ? '#d97706' : isInProgress ? '#2563eb' : '#059669';
-
-                  return (
-                    <div key={i} style={{ padding: '0.85rem', borderRadius: '0.5rem', border: '1px solid rgba(0,0,0,0.05)', background: '#fff' }}>
-                      <div style={{ fontSize: '0.875rem', color: '#1e1b4b', marginBottom: '0.5rem', fontWeight: 500 }}>
-                        {cleaned.split('|')[0]}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '9999px', background: statusBg, color: statusColor, fontWeight: 600 }}>
-                          {isPending ? '⏳ Pending' : isInProgress ? '⚙️ In Progress' : '✅ Resolved'}
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                          {cleaned.split('|')[1]?.replace('Status:', '')?.trim() || ''}
-                        </span>
-                      </div>
-                    </div>
-                  );
+                const trimmedLine = line.trim();
+                if (!trimmedLine.startsWith('- ')) {
+                  if (trimmedLine.startsWith('### ')) {
+                    return <h5 key={i} style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--primary)', margin: '0.5rem 0' }}>{trimmedLine.replace('### ', '')}</h5>;
+                  }
+                  return null;
                 }
-                return <p key={i} style={{ margin: 0, fontSize: '0.9rem', color: '#64748b' }}>{line}</p>;
+                const cleaned = trimmedLine.replace('- ', '');
+                const isPending = cleaned.toLowerCase().includes('pending');
+                const isInProgress = cleaned.toLowerCase().includes('in progress');
+                const statusStr = isPending ? 'Pending' : isInProgress ? 'In Progress' : 'Resolved';
+
+                const parts = cleaned.split('| Status:');
+                const titleAndDesc = parts[0] || cleaned;
+                const statusAndDate = parts[1] || '';
+
+                const cleanTitle = titleAndDesc.replace(/[\*\_]/g, '').trim();
+                const cleanDate = statusAndDate.replace(/[\*\_]/g, '').trim();
+
+                return (
+                  <div 
+                    key={i} 
+                    style={{ 
+                      padding: '0.85rem 1rem', 
+                      borderRadius: '0.625rem', 
+                      border: '1px solid rgba(109, 40, 217, 0.08)', 
+                      background: '#ffffff',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div 
+                      title={cleanTitle}
+                      style={{ 
+                        fontSize: '0.875rem', 
+                        color: '#1e293b', 
+                        marginBottom: '0.5rem', 
+                        fontWeight: 600,
+                        lineHeight: 1.45,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
+                      }}
+                    >
+                      {cleanTitle}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <StatusBadge status={statusStr} />
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                        {cleanDate}
+                      </span>
+                    </div>
+                  </div>
+                );
               })}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
-              <AlertCircle style={{ display: 'block', margin: '0 auto 0.5rem', opacity: 0.5 }} />
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8', flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertCircle style={{ marginBottom: '0.5rem', opacity: 0.5 }} size={28} />
               No complaints registered yet.
             </div>
           )}

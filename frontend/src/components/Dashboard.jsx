@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Calendar, MessageSquareCode, FileText, CreditCard, Bell, 
   HelpCircle, Search, LogOut, ArrowRight, User as UserIcon, 
-  Sparkles, CheckCircle2, ChevronRight, RefreshCw, Cpu
+  Sparkles, ChevronRight, RefreshCw, Cpu, UserCheck, Clock
 } from 'lucide-react';
 import SchedulerTab from './SchedulerTab';
 import ComplaintsTab from './ComplaintsTab';
@@ -10,17 +10,22 @@ import DocumentsTab from './DocumentsTab';
 import FeesTab from './FeesTab';
 import NotificationsTab from './NotificationsTab';
 import LostFoundTab from './LostFoundTab';
+import AttendanceTab from './AttendanceTab';
+import FloatingAIChatbot from './FloatingAIChatbot';
+import MarkdownView from './MarkdownView';
 
 const AGENTS = [
   { name: "Scheduler Agent", icon: Calendar, color: "#6d28d9", desc: "Timetable, exams, holidays, and bookings" },
-  { name: "Complaint Agent", icon: MessageSquareCode, color: "#2563eb", desc: "Hostel, classroom, bus, maintenance issues" },
-  { name: "Document Request Agent", icon: FileText, color: "#059669", desc: "Bonafide, certificates, ID cards, hall tickets" },
-  { name: "Fee & Payment Agent", icon: CreditCard, color: "#d97706", desc: "Tuition, exams, payment history & dues" },
-  { name: "Notification Agent", icon: Bell, color: "#dc2626", desc: "Announcements, placements, alerts & circulars" },
-  { name: "Lost & Found Agent", icon: HelpCircle, color: "#4f46e5", desc: "Registry for lost items, reports and matches" }
+  { name: "Complaint Agent", icon: MessageSquareCode, color: "#4f46e5", desc: "Hostel, classroom, bus, maintenance issues" },
+  { name: "Document Request Agent", icon: FileText, color: "#4338ca", desc: "Bonafide, certificates, ID cards, hall tickets" },
+  { name: "Fee & Payment Agent", icon: CreditCard, color: "#7c3aed", desc: "Tuition, exams, payment history & dues" },
+  { name: "Notification Agent", icon: Bell, color: "#6366f1", desc: "Announcements, placements, alerts & circulars" },
+  { name: "Lost & Found Agent", icon: HelpCircle, color: "#5b21b6", desc: "Registry for lost items, reports and matches" }
 ];
 
 const RECENT_SEARCHES = [
+  { label: "My Class Timetable", query: "Show my class timetable", agent: "Scheduler Agent" },
+  { label: "My Attendance & Cutoff Status", query: "What is my attendance percentage and exam eligibility?", agent: "Scheduler Agent" },
   { label: "Internal Exam Schedule", query: "When is my internal exam?", agent: "Scheduler Agent" },
   { label: "Bonafide Certificate Request", query: "I need a Bonafide Certificate", agent: "Document Request Agent" },
   { label: "Placement Drive Zoho", query: "Any placement drives?", agent: "Notification Agent" }
@@ -112,11 +117,34 @@ const Dashboard = ({ user, onLogout }) => {
     }
   };
 
+  const handleActionClick = (action) => {
+    const act = (action || '').toLowerCase();
+    if (act.includes('timetable') || act.includes('schedule')) {
+      setActiveAgent("Scheduler Agent");
+      setSelectedAgent("Scheduler Agent");
+    } else if (act.includes('attendance')) {
+      setActiveAgent("Attendance & Eligibility");
+      setSelectedAgent(null);
+    } else if (act.includes('complaint') || act.includes('maintenance')) {
+      setActiveAgent("Complaint Agent");
+      setSelectedAgent("Complaint Agent");
+    } else if (act.includes('document') || act.includes('bonafide')) {
+      setActiveAgent("Document Request Agent");
+      setSelectedAgent("Document Request Agent");
+    } else if (act.includes('fee') || act.includes('dues')) {
+      setActiveAgent("Fee & Payment Agent");
+      setSelectedAgent("Fee & Payment Agent");
+    } else if (act.includes('notification') || act.includes('placement')) {
+      setActiveAgent("Notification Agent");
+      setSelectedAgent("Notification Agent");
+    }
+  };
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-gradient)' }}>
       
       {/* Sidebar */}
-      <aside className="glass-card" style={{ width: '300px', margin: '1rem', marginRight: '0', display: 'flex', flexDirection: 'column', padding: '1.5rem', borderRadius: '1.25rem', height: 'calc(100vh - 2rem)', position: 'sticky', top: '1rem', boxSizing: 'border-box' }}>
+      <aside className="glass-card" style={{ width: '290px', minWidth: '290px', margin: '1rem', marginRight: '0', display: 'flex', flexDirection: 'column', padding: '1.5rem', borderRadius: '1.25rem', height: 'calc(100vh - 2rem)', position: 'sticky', top: '1rem', boxSizing: 'border-box' }}>
         
         {/* Profile Card */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(109, 40, 217, 0.1)', marginBottom: '1.5rem' }}>
@@ -129,8 +157,81 @@ const Dashboard = ({ user, onLogout }) => {
           </div>
         </div>
 
+        {/* Direct Academic Portal - Timetable & Attendance */}
+        <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+            Academic Records
+          </div>
+
+          {/* Class Timetable Button */}
+          <button
+            onClick={() => {
+              setActiveAgent("Scheduler Agent");
+              setSelectedAgent("Scheduler Agent");
+              setResponse(null);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.75rem 1rem',
+              borderRadius: '0.75rem',
+              border: activeAgent === "Scheduler Agent" ? '1.5px solid var(--secondary)' : '1.5px solid rgba(37, 99, 235, 0.15)',
+              background: activeAgent === "Scheduler Agent" ? 'rgba(37, 99, 235, 0.12)' : 'rgba(37, 99, 235, 0.04)',
+              textAlign: 'left',
+              cursor: 'pointer',
+              width: '100%',
+              color: activeAgent === "Scheduler Agent" ? 'var(--secondary)' : '#1e1b4b',
+              transition: 'all 0.2s',
+              boxSizing: 'border-box'
+            }}
+          >
+            <div style={{ padding: '0.35rem', borderRadius: '0.5rem', background: 'rgba(37, 99, 235, 0.15)', color: 'var(--secondary)' }}>
+              <Clock size={18} />
+            </div>
+            <div style={{ flexGrow: 1 }}>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700 }}>Class Timetable</div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Mon–Fri periods & venues</div>
+            </div>
+            {activeAgent === "Scheduler Agent" && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--secondary)' }} />}
+          </button>
+
+          {/* Attendance & Eligibility Button */}
+          <button
+            onClick={() => {
+              setActiveAgent("Attendance & Eligibility");
+              setSelectedAgent(null);
+              setResponse(null);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.75rem 1rem',
+              borderRadius: '0.75rem',
+              border: activeAgent === "Attendance & Eligibility" ? '1.5px solid #059669' : '1.5px solid rgba(5, 150, 105, 0.2)',
+              background: activeAgent === "Attendance & Eligibility" ? 'rgba(5, 150, 105, 0.12)' : 'rgba(5, 150, 105, 0.04)',
+              textAlign: 'left',
+              cursor: 'pointer',
+              width: '100%',
+              color: activeAgent === "Attendance & Eligibility" ? '#059669' : '#1e1b4b',
+              transition: 'all 0.2s',
+              boxSizing: 'border-box'
+            }}
+          >
+            <div style={{ padding: '0.35rem', borderRadius: '0.5rem', background: 'rgba(5, 150, 105, 0.15)', color: '#059669' }}>
+              <UserCheck size={18} />
+            </div>
+            <div style={{ flexGrow: 1 }}>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700 }}>Attendance & Eligibility</div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>75% cutoff & subject logs</div>
+            </div>
+            {activeAgent === "Attendance & Eligibility" && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#059669' }} />}
+          </button>
+        </div>
+
         {/* Navigation / Agents Header */}
-        <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
           Specialist Agents
         </div>
 
@@ -161,14 +262,28 @@ const Dashboard = ({ user, onLogout }) => {
                   boxSizing: 'border-box'
                 }}
               >
-                <div style={{ padding: '0.35rem', borderRadius: '0.5rem', background: `${agent.color}15`, color: agent.color }}>
+                <div style={{ padding: '0.35rem', borderRadius: '0.5rem', background: `${agent.color}15`, color: agent.color, flexShrink: 0 }}>
                   <Icon size={18} />
                 </div>
-                <div style={{ flexGrow: 1 }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{agent.name}</div>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '170px' }}>{agent.desc}</div>
+                <div style={{ flexGrow: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.name}</div>
+                  <div 
+                    title={agent.desc}
+                    style={{ 
+                      fontSize: '0.72rem', 
+                      color: '#64748b', 
+                      lineHeight: 1.3,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word'
+                    }}
+                  >
+                    {agent.desc}
+                  </div>
                 </div>
-                {isActive && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb' }} />}
+                {isActive && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb', flexShrink: 0 }} />}
               </button>
             );
           })}
@@ -186,29 +301,34 @@ const Dashboard = ({ user, onLogout }) => {
       </aside>
 
       {/* Main Panel */}
-      <main style={{ flexGrow: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxSizing: 'border-box', overflowY: 'auto' }}>
+      <main style={{ flexGrow: 1, minWidth: 0, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxSizing: 'border-box', overflowY: 'auto' }}>
         
         {/* Top Header */}
-        <header className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 2rem' }}>
+        <header className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2rem', border: '1px solid rgba(217, 119, 6, 0.25)', boxShadow: '0 8px 30px rgba(217, 119, 6, 0.08)' }}>
           <div>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em' }}>SRI ESHWAR CAMPUS OPERATIONS</span>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Smart Campus Assistant</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
+              <span style={{ fontSize: '0.85rem' }}>👑</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#b45309', letterSpacing: '0.08em', textTransform: 'uppercase' }}>SRI ESHWAR COLLEGE OF ENGINEERING</span>
+            </div>
+            <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 900, color: '#1e1b4b', letterSpacing: '-0.02em' }}>Royal Campus Operations Suite</h2>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.75rem', background: 'rgba(37, 99, 235, 0.08)', borderRadius: '9999px', fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 600 }}>
-            <Cpu size={14} />
-            Orchestrator Mode Active
+          <div className="royal-crest-badge">
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 8px #10b981' }} />
+            <Cpu size={14} style={{ color: '#d97706' }} />
+            Autonomous Core Active
           </div>
         </header>
 
         {/* Center Search / Orchestrator Agent */}
-        <section className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
+        <section className="glass-card" style={{ padding: '2.75rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px', border: '1px solid rgba(217, 119, 6, 0.2)', background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,251,235,0.8) 100%)' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            <Sparkles size={24} style={{ color: 'var(--primary)' }} />
-            <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, background: 'linear-gradient(to right, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              How can I assist your campus life today?
-            </h1>
+          <div className="royal-crest-badge" style={{ marginBottom: '1rem' }}>
+            <span>👑</span> Imperial AI Assistant & Academic Concierge
           </div>
+
+          <h1 style={{ margin: '0 0 1.5rem 0', fontSize: '2.25rem', fontWeight: 900, textAlign: 'center', background: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 45%, #b45309 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.025em' }}>
+            How can I assist your campus life today?
+          </h1>
 
           {/* Search bar */}
           <form onSubmit={handleSearchSubmit} style={{ width: '100%', maxWidth: '720px', position: 'relative' }}>
@@ -219,41 +339,36 @@ const Dashboard = ({ user, onLogout }) => {
               onChange={(e) => setQuery(e.target.value)}
               style={{
                 width: '100%',
-                padding: '1.15rem 1.5rem',
-                paddingLeft: '3.5rem',
-                paddingRight: '4rem',
+                padding: '1.2rem 1.5rem',
+                paddingLeft: '3.6rem',
+                paddingRight: '4.8rem',
                 borderRadius: '9999px',
-                border: '1.5px solid rgba(109, 40, 217, 0.15)',
+                border: '2px solid rgba(217, 119, 6, 0.3)',
                 outline: 'none',
-                background: 'rgba(255, 255, 255, 0.95)',
-                fontSize: '1rem',
-                boxShadow: '0 4px 20px rgba(109, 40, 217, 0.04)',
+                background: '#ffffff',
+                fontSize: '1.02rem',
+                boxShadow: '0 12px 30px -6px rgba(217, 119, 6, 0.12), 0 2px 8px rgba(0,0,0,0.03)',
                 boxSizing: 'border-box',
-                transition: 'all 0.3s'
+                transition: 'all 0.25s'
               }}
             />
-            <Search size={20} style={{ position: 'absolute', left: '1.25rem', top: '1.25rem', color: '#94a3b8' }} />
+            <Search size={22} style={{ position: 'absolute', left: '1.35rem', top: '1.35rem', color: '#d97706' }} />
             <button
               type="submit"
               disabled={loading}
+              className="btn-royal-gold"
               style={{
                 position: 'absolute',
-                right: '0.5rem',
-                top: '0.5rem',
-                bottom: '0.5rem',
-                padding: '0 1.25rem',
+                right: '0.45rem',
+                top: '0.45rem',
+                bottom: '0.45rem',
+                padding: '0 1.5rem',
                 borderRadius: '9999px',
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                color: '#fff',
                 border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                boxShadow: '0 4px 14px rgba(217, 119, 6, 0.4)'
               }}
             >
-              {loading ? <RefreshCw className="animate-spin" size={16} /> : <ArrowRight size={16} />}
+              {loading ? <RefreshCw className="animate-spin" size={16} /> : <ArrowRight size={18} />}
             </button>
           </form>
 
@@ -271,16 +386,25 @@ const Dashboard = ({ user, onLogout }) => {
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
           {RECENT_SEARCHES.map((item, idx) => (
             <div 
-              key={idx}
-              className="glass-card" 
+              key={idx} 
+              className="glass-card glass-card-interactive" 
               onClick={() => handleRecentClick(item)}
-              style={{ padding: '1.25rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}
+              style={{ 
+                padding: '1.25rem', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                gap: '1rem',
+                borderLeft: '4px solid var(--primary)',
+                background: 'rgba(255, 255, 255, 0.9)'
+              }}
             >
               <div>
-                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase' }}>{item.agent}</span>
-                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>{item.label}</p>
+                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.agent}</span>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', fontWeight: 700, color: '#1e293b' }}>{item.label}</p>
               </div>
-              <ChevronRight size={18} style={{ color: '#94a3b8' }} />
+              <ChevronRight size={18} style={{ color: 'var(--primary-light)' }} />
             </div>
           ))}
         </section>
@@ -298,28 +422,55 @@ const Dashboard = ({ user, onLogout }) => {
             ) : activeAgent ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', flexGrow: 1 }}>
                 {response && (
-                  <div style={{ padding: '1.25rem', borderRadius: '0.75rem', background: 'rgba(109, 40, 217, 0.05)', border: '1px solid rgba(109, 40, 217, 0.1)', fontSize: '0.9rem', color: '#1e1b4b', lineHeight: '1.6' }}>
-                    <h5 style={{ margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--primary)', fontWeight: 700 }}>
-                      <Sparkles size={14} /> AI Response Summary
-                    </h5>
-                    <div style={{ whiteSpace: 'pre-line' }}>
-                      {response.split('\n').map((line, i) => {
-                        if (line.startsWith('### ')) {
-                          return <h5 key={i} style={{ fontSize: '1rem', fontWeight: 700, margin: '0.75rem 0 0.25rem 0', color: 'var(--primary)' }}>{line.replace('### ', '')}</h5>;
-                        }
-                        if (line.startsWith('#### ')) {
-                          return <h6 key={i} style={{ fontSize: '0.9rem', fontWeight: 700, margin: '0.5rem 0 0.25rem 0', color: 'var(--secondary)' }}>{line.replace('#### ', '')}</h6>;
-                        }
-                        if (line.startsWith('- ')) {
-                          return <li key={i} style={{ marginLeft: '1rem', marginBottom: '0.2rem' }}>{line.replace('- ', '')}</li>;
-                        }
-                        return <p key={i} style={{ margin: '0.4rem 0' }}>{line}</p>;
-                      })}
+                  <div style={{ padding: '1.5rem', borderRadius: '0.875rem', background: 'rgba(109, 40, 217, 0.04)', border: '1px solid rgba(109, 40, 217, 0.1)', fontSize: '0.9rem', color: '#1e1b4b', lineHeight: '1.6', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '1rem', fontSize: '0.95rem' }}>
+                      <Sparkles size={16} /> AI Orchestrator Response
                     </div>
+                    
+                    {/* Render AI response properly via MarkdownView */}
+                    <MarkdownView content={response} onActionClick={handleActionClick} />
+
+                    {(query.toLowerCase().includes('attendance') || response.includes('Attendance') || response.includes('Cutoff') || response.includes('Eligibility')) && (
+                      <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={() => {
+                            setActiveAgent("Attendance & Eligibility");
+                            setSelectedAgent(null);
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '9999px',
+                            background: '#059669',
+                            color: '#fff',
+                            border: 'none',
+                            fontSize: '0.825rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px rgba(5, 150, 105, 0.25)'
+                          }}
+                        >
+                          <UserCheck size={15} /> Open Full Attendance & Eligibility Portal
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div style={{ flexGrow: 1 }}>
-                  {activeAgent === "Scheduler Agent" && <SchedulerTab user={user} />}
+                  {activeAgent === "Attendance & Eligibility" && (
+                    <AttendanceTab 
+                      user={user} 
+                      onAskChatbot={(q) => { 
+                        setQuery(q); 
+                        triggerSearch(q); 
+                      }} 
+                    />
+                  )}
+                  {activeAgent === "Scheduler Agent" && (
+                    <SchedulerTab user={user} initialView="timetable" />
+                  )}
                   {activeAgent === "Complaint Agent" && <ComplaintsTab user={user} />}
                   {activeAgent === "Document Request Agent" && <DocumentsTab user={user} />}
                   {activeAgent === "Fee & Payment Agent" && <FeesTab user={user} />}
@@ -328,7 +479,7 @@ const Dashboard = ({ user, onLogout }) => {
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexGrow: 1, color: '#94a3b8', textAlign: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexGrow: 1, color: '#94a3b8', textAlign: 'center', padding: '3rem 1rem' }}>
                 <Cpu size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
                 <p style={{ margin: 0, fontSize: '0.95rem' }}>Ask Sri Eshwar Campus Assistant a question using the search bar above.</p>
                 <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem' }}>The Orchestrator Agent will automatically route your question to the specialist AI agent.</p>
@@ -339,6 +490,9 @@ const Dashboard = ({ user, onLogout }) => {
         </section>
 
       </main>
+
+      {/* Docked AI Guard Panel */}
+      <FloatingAIChatbot user={user} isDocked={true} />
 
     </div>
   );
