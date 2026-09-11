@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Plus, AlertCircle, RefreshCw, Download, Calendar } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import MarkdownView from './MarkdownView';
+import { apiUrl } from '../api';
 
 const DocumentsTab = ({ user }) => {
   const [docs, setDocs] = useState('');
@@ -13,7 +14,7 @@ const DocumentsTab = ({ user }) => {
   const fetchDocuments = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -45,7 +46,7 @@ const DocumentsTab = ({ user }) => {
     const formattedQuery = `I need a ${docType} certificate`;
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

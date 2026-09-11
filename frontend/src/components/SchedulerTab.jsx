@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, BookOpen, UserPlus, RefreshCw, Trash2, Plus, Bell } from 'lucide-react';
 import TimetableGrid from './TimetableGrid';
+import { apiUrl } from '../api';
 
 const SchedulerTab = ({ user, initialView = 'timetable' }) => {
   const [activeView, setActiveView] = useState(initialView); // timetable, dashboard, exams, holidays, reminders, booking
@@ -27,7 +28,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
     setLoading(true);
     if (viewName === 'timetable') {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/timetable/student/${userRollNo}`);
+        const res = await fetch(apiUrl(`http://127.0.0.1:8000/api/timetable/student/${userRollNo}`));
         if (res.ok) {
           const resData = await res.json();
           setTimetableData(resData.timetable || []);
@@ -42,7 +43,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
 
     if (viewName === 'events') {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/academic-calendar');
+        const res = await fetch(apiUrl('http://127.0.0.1:8000/api/academic-calendar'));
         if (res.ok) {
           const resData = await res.json();
           setCalendarEvents(resData.calendar || []);
@@ -60,7 +61,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
     if (viewName === 'holidays') query = 'holiday';
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -81,7 +82,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
 
   const fetchReminders = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,7 +116,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
     e.preventDefault();
     if (!newReminderTitle.trim()) return;
     try {
-      await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -134,7 +135,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
 
   const handleDeleteReminder = async (id) => {
     try {
-      await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -159,7 +160,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
     setBookingInput('');
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -183,7 +184,7 @@ const SchedulerTab = ({ user, initialView = 'timetable' }) => {
     setInBookingSession(true);
     setBookingChat([]);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

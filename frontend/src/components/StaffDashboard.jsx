@@ -7,6 +7,7 @@ import { getSubjectDetails } from './TimetableGrid';
 import FloatingAIChatbot from './FloatingAIChatbot';
 import StatusBadge from './StatusBadge';
 import MarkdownView from './MarkdownView';
+import { apiUrl } from '../api';
 
 
 const StaffDashboard = ({ user, onLogout }) => {
@@ -123,7 +124,7 @@ const StaffDashboard = ({ user, onLogout }) => {
     const titleWithMeta = `${wokeTitle} |tags:${tags.join(",")} |category:${newEventCategory}`;
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/academic-calendar/add', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/academic-calendar/add'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -152,7 +153,7 @@ const StaffDashboard = ({ user, onLogout }) => {
   const handleDeleteEvent = async (id) => {
     if (!window.confirm("Are you sure you want to cancel this event?")) return;
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/academic-calendar/delete', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/academic-calendar/delete'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -183,7 +184,7 @@ const StaffDashboard = ({ user, onLogout }) => {
     ];
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/staff/students?dept=${dept}&year=${year}`);
+      const res = await fetch(apiUrl(`http://127.0.0.1:8000/api/staff/students?dept=${dept}&year=${year}`));
       if (res.ok) {
         let data = await res.json();
         if (!data || data.length === 0) {
@@ -230,7 +231,7 @@ const StaffDashboard = ({ user, onLogout }) => {
         status: attendanceRecords[roll]
       }));
 
-      const res = await fetch('http://127.0.0.1:8000/api/staff/attendance/submit', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/staff/attendance/submit'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -265,35 +266,35 @@ const StaffDashboard = ({ user, onLogout }) => {
     setLoading(true);
     try {
       // Fetch Timetable
-      const ttRes = await fetch(`http://127.0.0.1:8000/api/staff/timetable/${dept}`);
+      const ttRes = await fetch(apiUrl(`http://127.0.0.1:8000/api/staff/timetable/${dept}`));
       if (ttRes.ok) {
         const data = await ttRes.json();
         setTimetable(data.timetable);
       }
 
       // Fetch Meetings
-      const mtRes = await fetch(`http://127.0.0.1:8000/api/staff/meetings`);
+      const mtRes = await fetch(apiUrl(`http://127.0.0.1:8000/api/staff/meetings`));
       if (mtRes.ok) {
         const data = await mtRes.json();
         setMeetings(data.meetings);
       }
 
       // Fetch Invigilations
-      const invRes = await fetch(`http://127.0.0.1:8000/api/staff/invigilations`);
+      const invRes = await fetch(apiUrl(`http://127.0.0.1:8000/api/staff/invigilations`));
       if (invRes.ok) {
         const data = await invRes.json();
         setInvigilations(data.invigilations);
       }
 
       // Fetch Academic Calendar
-      const calRes = await fetch(`http://127.0.0.1:8000/api/academic-calendar`);
+      const calRes = await fetch(apiUrl(`http://127.0.0.1:8000/api/academic-calendar`));
       if (calRes.ok) {
         const data = await calRes.json();
         setCalendar(data.calendar || []);
       }
 
       // Fetch Notices
-      const noticesRes = await fetch(`http://127.0.0.1:8000/api/admin/notifications`);
+      const noticesRes = await fetch(apiUrl(`http://127.0.0.1:8000/api/admin/notifications`));
       if (noticesRes.ok) {
         const data = await noticesRes.json();
         setNotices(data || []);
@@ -312,7 +313,7 @@ const StaffDashboard = ({ user, onLogout }) => {
     setNoticeMessage('');
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/admin/notifications/add', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/notifications/add'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -328,7 +329,7 @@ const StaffDashboard = ({ user, onLogout }) => {
         setNoticeMessage("Notice broadcasted successfully! 📢");
         setNewNotice({ title: '', content: '', category: 'circular' });
         // Refresh notices list
-        const noticesRes = await fetch(`http://127.0.0.1:8000/api/admin/notifications`);
+        const noticesRes = await fetch(apiUrl(`http://127.0.0.1:8000/api/admin/notifications`));
         if (noticesRes.ok) {
           const data = await noticesRes.json();
           setNotices(data || []);
@@ -354,7 +355,7 @@ const StaffDashboard = ({ user, onLogout }) => {
     if (!newSlot.subject.trim()) return;
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/staff/timetable/add', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/staff/timetable/add'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -380,7 +381,7 @@ const StaffDashboard = ({ user, onLogout }) => {
     if (!window.confirm("Are you sure you want to remove this class slot?")) return;
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/staff/timetable/delete', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/staff/timetable/delete'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, RefreshCw, AlertCircle, Tag, User, Calendar } from 'lucide-react';
+import { apiUrl } from '../api';
 
 const NotificationsTab = ({ user }) => {
   const [filter, setFilter] = useState('all');
@@ -9,7 +10,7 @@ const NotificationsTab = ({ user }) => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/admin/notifications');
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/notifications'));
       if (res.ok) {
         const data = await res.json();
         setNotifications(data || []);

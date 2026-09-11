@@ -1,9 +1,12 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import uvicorn
 from fastapi import FastAPI, HTTPException 
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
-import os
 import datetime
 from typing import List
 from orchestrator import OrchestratorAgent, DB_PATH

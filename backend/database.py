@@ -1,7 +1,20 @@
 import sqlite3
 import os
+import shutil
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "campus.db")
+DB_ORIGIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "campus.db")
+
+# In serverless environments (e.g. Vercel), the deployment directory is read-only.
+# Copy database to /tmp so write operations succeed seamlessly.
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    DB_PATH = "/tmp/campus.db"
+    if not os.path.exists(DB_PATH) and os.path.exists(DB_ORIGIN):
+        try:
+            shutil.copyfile(DB_ORIGIN, DB_PATH)
+        except Exception:
+            DB_PATH = DB_ORIGIN
+else:
+    DB_PATH = DB_ORIGIN
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)

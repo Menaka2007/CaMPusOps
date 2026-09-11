@@ -7,7 +7,7 @@ from agents.fee import FeeAgent
 from agents.notification import NotificationAgent
 from agents.lost_found import LostFoundAgent
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "campus.db")
+from database import DB_PATH
 
 class OrchestratorAgent:
     def __init__(self):

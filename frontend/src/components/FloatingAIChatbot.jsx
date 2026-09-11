@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import MarkdownView from './MarkdownView';
 import StatusBadge from './StatusBadge';
+import { apiUrl } from '../api';
 
 const FloatingAIChatbot = ({ user, isDocked = true }) => {
   const [isOpen, setIsOpen] = useState(true); // Default open in docked layout
@@ -50,7 +51,7 @@ const FloatingAIChatbot = ({ user, isDocked = true }) => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/query', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/query'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

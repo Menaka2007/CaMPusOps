@@ -13,6 +13,7 @@ import LostFoundTab from './LostFoundTab';
 import AttendanceTab from './AttendanceTab';
 import FloatingAIChatbot from './FloatingAIChatbot';
 import MarkdownView from './MarkdownView';
+import { apiUrl } from '../api';
 
 const AGENTS = [
   { name: "Scheduler Agent", icon: Calendar, color: "#6d28d9", desc: "Timetable, exams, holidays, and bookings" },
@@ -69,7 +70,7 @@ const Dashboard = ({ user, onLogout }) => {
         setLogs([...logList]);
       }
 
-      const res = await fetch(url, {
+      const res = await fetch(apiUrl(url), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

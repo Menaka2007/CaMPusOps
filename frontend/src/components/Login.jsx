@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GraduationCap, Briefcase, ShieldAlert, Sparkles, KeyRound } from 'lucide-react';
+import { apiUrl } from '../api';
 
 const Login = ({ onLoginSuccess }) => {
   const [role, setRole] = useState(null); // 'student' | 'staff' | 'admin'
@@ -77,7 +78,7 @@ const Login = ({ onLoginSuccess }) => {
     }
 
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(apiUrl(endpoint), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

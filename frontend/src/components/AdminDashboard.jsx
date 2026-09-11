@@ -10,6 +10,7 @@ import {
 import FloatingAIChatbot from './FloatingAIChatbot';
 import StatusBadge from './StatusBadge';
 import MarkdownView from './MarkdownView';
+import { apiUrl } from '../api';
 
 const AdminDashboard = ({ user, onLogout }) => {
   // Navigation
@@ -158,31 +159,31 @@ const AdminDashboard = ({ user, onLogout }) => {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const metRes = await fetch('http://127.0.0.1:8000/api/admin/metrics');
+      const metRes = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/metrics'));
       if (metRes.ok) {
         const data = await metRes.json();
         setMetrics(prev => ({ ...prev, ...data }));
       }
 
-      const compRes = await fetch('http://127.0.0.1:8000/api/admin/complaints');
+      const compRes = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/complaints'));
       if (compRes.ok) {
         const data = await compRes.json();
         setComplaints(data);
       }
 
-      const docRes = await fetch('http://127.0.0.1:8000/api/admin/documents');
+      const docRes = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/documents'));
       if (docRes.ok) {
         const data = await docRes.json();
         setDocuments(data);
       }
 
-      const notifRes = await fetch('http://127.0.0.1:8000/api/admin/notifications');
+      const notifRes = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/notifications'));
       if (notifRes.ok) {
         const data = await notifRes.json();
         setNotifications(data);
       }
 
-      const calRes = await fetch('http://127.0.0.1:8000/api/academic-calendar');
+      const calRes = await fetch(apiUrl('http://127.0.0.1:8000/api/academic-calendar'));
       if (calRes.ok) {
         const data = await calRes.json();
         setEvents(data.calendar || []);
@@ -201,7 +202,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   // Update Database actions
   const handleUpdateComplaint = async (id, status, staffName = 'Unassigned') => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/admin/complaints/update', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/complaints/update'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status })
@@ -226,7 +227,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   const handleCleanSpamComplaints = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/admin/complaints/clean-spam', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/complaints/clean-spam'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -250,7 +251,7 @@ const AdminDashboard = ({ user, onLogout }) => {
 
   const handleUpdateDocument = async (id, status, remarks = '') => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/admin/documents/update', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/documents/update'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status })
@@ -371,7 +372,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   const handlePostNotification = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/admin/notifications/add', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/admin/notifications/add'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -396,7 +397,7 @@ const AdminDashboard = ({ user, onLogout }) => {
     e.preventDefault();
     if (!eventForm.name.trim()) return;
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/academic-calendar/add', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/academic-calendar/add'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -422,7 +423,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   const handleDeleteEvent = async (id) => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/academic-calendar/delete', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/academic-calendar/delete'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })

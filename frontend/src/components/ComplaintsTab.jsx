@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageSquareCode, Plus, AlertCircle, RefreshCw, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import MarkdownView from './MarkdownView';
+import { apiUrl } from '../api';
 
 const ComplaintsTab = ({ user }) => {
   const [complaints, setComplaints] = useState('');
@@ -18,7 +19,7 @@ const ComplaintsTab = ({ user }) => {
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -63,7 +64,7 @@ const ComplaintsTab = ({ user }) => {
     const formattedQuery = `complaint about ${category}${venueText}: ${description}`;
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HelpCircle, Plus, RefreshCw, AlertCircle, Search } from 'lucide-react';
+import { apiUrl } from '../api';
 
 const LostFoundTab = ({ user }) => {
   const [items, setItems] = useState('');
@@ -18,7 +19,7 @@ const LostFoundTab = ({ user }) => {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -52,7 +53,7 @@ const LostFoundTab = ({ user }) => {
     const formattedQuery = `I ${status} a ${itemType} near ${details}`;
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/direct-agent', {
+      const res = await fetch(apiUrl('http://127.0.0.1:8000/api/direct-agent'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

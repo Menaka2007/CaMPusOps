@@ -3,6 +3,7 @@ import {
   UserCheck, AlertTriangle, CheckCircle, Clock, BookOpen, 
   Calendar, RefreshCw, Sparkles, TrendingUp, AlertCircle, Filter, ArrowUpRight 
 } from 'lucide-react';
+import { apiUrl } from '../api';
 
 const AttendanceTab = ({ user, onAskChatbot }) => {
   const [data, setData] = useState(null);
@@ -16,7 +17,7 @@ const AttendanceTab = ({ user, onAskChatbot }) => {
     setError(null);
     try {
       const rollNo = user?.roll_no || '717721L101';
-      const res = await fetch(`http://127.0.0.1:8000/api/student/attendance/${encodeURIComponent(rollNo)}`);
+      const res = await fetch(apiUrl(`http://127.0.0.1:8000/api/student/attendance/${encodeURIComponent(rollNo)}`));
       if (!res.ok) {
         throw new Error('Failed to load attendance records');
       }
