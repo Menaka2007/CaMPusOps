@@ -14,10 +14,8 @@ export const apiUrl = (endpoint) => {
     if (API_BASE_URL) {
       return endpoint.replace(/https?:\/\/(127\.0\.0\.1|localhost):8000/, API_BASE_URL);
     }
-    if (import.meta.env.PROD) {
-      return endpoint.replace(/https?:\/\/(127\.0\.0\.1|localhost):8000/, '');
-    }
-    return endpoint;
+    // Route via relative path so both Vite proxy (Laptop & Mobile) and Vercel serverless work seamlessly
+    return endpoint.replace(/https?:\/\/(127\.0\.0\.1|localhost):8000/, '');
   }
   
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
