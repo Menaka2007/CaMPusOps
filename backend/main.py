@@ -13,6 +13,11 @@ from orchestrator import OrchestratorAgent, DB_PATH
 
 app = FastAPI(title="Smart Campus Assistant Backend")
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,

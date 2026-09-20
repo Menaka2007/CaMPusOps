@@ -208,20 +208,18 @@ def init_db():
     """)
 
     students_data = [
-        ("717721L101", "Aravind Swamy", "CSE", 1, "aravind@sece.ac.in", "student"),
-        ("717721L102", "J. Samhitha", "CSE", 1, "samhitha.j@sece.ac.in", "student"),
-        ("717721L103", "Vinisha", "CSE", 1, "vinisha@sece.ac.in", "student"),
-        ("717721L104", "Anushya", "CSE", 2, "anushya@sece.ac.in", "student"),
-        ("717721L105", "Varsha", "CSE", 2, "varsha@sece.ac.in", "student"),
-        ("717721L106", "Kanishka", "CSE", 3, "kanishka@sece.ac.in", "student"),
-        ("717721L107", "Prega", "CSE", 3, "prega@sece.ac.in", "student"),
-        ("717721L108", "Akshaya", "CSE", 4, "akshaya@sece.ac.in", "student"),
-        ("717721L109", "Madhumita", "CSE", 4, "madhumita@sece.ac.in", "student"),
-        ("717721L110", "S. Chandrika", "ECE", 1, "chandrika.s@sece.ac.in", "student"),
-        ("717721L111", "Menaka S", "IT", 4, "menaka.s@sece.ac.in", "student"),
+        ("24EE026", "Menaka", "EEE", 2, "menaka@sece.ac.in", "student"),
+        ("24EC045", "Chandrighaa", "ECE", 3, "chandrighaa@sece.ac.in", "student"),
+        ("24CS006", "Samyuktha", "CSE", 4, "samyuktha@sece.ac.in", "student"),
+        ("24CC052", "Akshaya", "CCE", 2, "akshaya@sece.ac.in", "student"),
         ("STAFF001", "Dr. Balasubramanian", "CSE", 0, "bala.cse@sece.ac.in", "staff"),
         ("ADMIN001", "Campus Registrar", "ADMIN", 0, "registrar@sece.ac.in", "admin")
     ]
+    students_data.extend(
+        (f"24CS3{index:02d}", f"CSE Year 3 Student {index:02d}", "CSE", 3,
+         f"cse.year3.{index:02d}@sece.ac.in", "student")
+        for index in range(1, 41)
+    )
     cursor.executemany("INSERT INTO students (roll_no, name, dept, year, email, role) VALUES (?, ?, ?, ?, ?, ?)", students_data)
 
     # 2. Faculty

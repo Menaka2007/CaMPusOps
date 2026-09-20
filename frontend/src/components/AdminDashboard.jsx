@@ -48,7 +48,7 @@ const AdminDashboard = ({ user, onLogout }) => {
 
   // Client-Side Simulated Datasets for Modules
   const [students, setStudents] = useState([
-    { id: 1, roll_no: '717721L101', name: 'Aravind Swamy', dept: 'CSE', year: 3, email: 'aravind.s@sece.ac.in', status: 'Active' },
+    { id: 1, roll_no: '717721L101', name: 'Aravind', dept: 'CSE', year: 3, email: 'aravind.s@sece.ac.in', status: 'Active' },
     { id: 2, roll_no: '717721L102', name: 'Dharshini Priya', dept: 'ECE', year: 3, email: 'dharshini.p@sece.ac.in', status: 'Active' },
     { id: 3, roll_no: '717721L103', name: 'Kavin Kumar', dept: 'IT', year: 4, email: 'kavin.k@sece.ac.in', status: 'Active' },
     { id: 4, roll_no: '717721L104', name: 'Shruti Sen', dept: 'CSE', year: 3, email: 'shruti.s@sece.ac.in', status: 'Inactive' },

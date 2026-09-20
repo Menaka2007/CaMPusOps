@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Calendar, MessageSquareCode, FileText, CreditCard, Bell, 
   HelpCircle, Search, LogOut, ArrowRight, User as UserIcon, 
-  Sparkles, ChevronRight, RefreshCw, Cpu, UserCheck, Clock
+  Sparkles, ChevronRight, RefreshCw, Cpu, UserCheck, Clock,
+  Menu, X
 } from 'lucide-react';
 import SchedulerTab from './SchedulerTab';
 import ComplaintsTab from './ComplaintsTab';
@@ -39,6 +40,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [logs, setLogs] = useState([]);
   const [response, setResponse] = useState(null);
   const [activeAgent, setActiveAgent] = useState(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const triggerSearch = async (searchQuery, directAgentName = null) => {
     if (!searchQuery.trim()) return;

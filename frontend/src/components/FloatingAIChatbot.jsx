@@ -113,6 +113,7 @@ const FloatingAIChatbot = ({ user, isDocked = true }) => {
   if (isDocked && !isOpen) {
     return (
       <div
+        className="chatbot-rail-wrapper"
         style={{
           width: '52px',
           flexShrink: 0,
@@ -131,7 +132,7 @@ const FloatingAIChatbot = ({ user, isDocked = true }) => {
         <button
           onClick={() => setIsOpen(true)}
           title="Expand AI Guard Panel"
-          className="glass-card"
+          className="glass-card chatbot-rail-button"
           style={{
             width: '46px',
             height: '180px',
@@ -152,6 +153,7 @@ const FloatingAIChatbot = ({ user, isDocked = true }) => {
         >
           <span style={{ fontSize: '1.1rem' }}>👑</span>
           <span 
+            className="chatbot-rail-text"
             style={{ 
               writingMode: 'vertical-rl', 
               transform: 'rotate(180deg)', 
@@ -164,7 +166,7 @@ const FloatingAIChatbot = ({ user, isDocked = true }) => {
           >
             Royal Guard
           </span>
-          <ChevronLeft size={16} style={{ color: '#fbbf24' }} />
+          <ChevronLeft size={16} style={{ color: '#fbbf24' }} className="chatbot-rail-text" />
         </button>
       </div>
     );
@@ -172,7 +174,7 @@ const FloatingAIChatbot = ({ user, isDocked = true }) => {
 
   return (
     <aside
-      className="glass-card"
+      className="glass-card chatbot-panel-wrapper"
       style={{
         width: '360px',
         flexShrink: 0,

@@ -118,61 +118,61 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-height-screen flex flex-col items-center justify-center p-6" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="min-height-screen flex flex-col items-center justify-center p-4 sm:p-6" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', boxSizing: 'border-box' }}>
       
       {/* College Logo / Header area */}
-      <div className="text-center mb-8 animate-fade-in" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 1.5rem', background: 'rgba(109, 40, 217, 0.08)', borderRadius: '9999px', border: '1px solid rgba(109, 40, 217, 0.15)', marginBottom: '1rem' }}>
-          <Sparkles size={16} className="text-purple-600" style={{ color: 'var(--primary)' }} />
-          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)', letterSpacing: '0.05em' }}>SRI ESHWAR COLLEGE OF ENGINEERING</span>
+      <div className="text-center mb-8 animate-fade-in" style={{ textAlign: 'center', marginBottom: '2rem', maxWidth: '100%' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 1rem', background: 'rgba(109, 40, 217, 0.08)', borderRadius: '9999px', border: '1px solid rgba(109, 40, 217, 0.15)', marginBottom: '1rem', maxWidth: '100%', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Sparkles size={16} className="text-purple-600" style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          <span style={{ fontSize: 'clamp(0.7rem, 2.5vw, 0.875rem)', fontWeight: 600, color: 'var(--primary)', letterSpacing: '0.05em', textAlign: 'center' }}>SRI ESHWAR COLLEGE OF ENGINEERING</span>
         </div>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, background: 'linear-gradient(to right, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: '0.5rem 0' }}>
+        <h1 style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', fontWeight: 800, background: 'linear-gradient(to right, var(--primary), var(--secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: '0.5rem 0', lineHeight: 1.2 }}>
           Smart Campus Assistant
         </h1>
-        <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Multi-Agent AI Powered Campus Operations</p>
+        <p style={{ color: '#64748b', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)' }}>Multi-Agent AI Powered Campus Operations</p>
       </div>
 
       {!role ? (
         <div className="animate-fade-in" style={{ width: '100%', maxWidth: '900px' }}>
-          <h2 style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 600, color: '#475569', marginBottom: '2rem' }}>Select your portal to continue</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', width: '100%' }}>
+          <h2 style={{ textAlign: 'center', fontSize: 'clamp(1.1rem, 3.5vw, 1.5rem)', fontWeight: 600, color: '#475569', marginBottom: '1.5rem' }}>Select your portal to continue</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: '1.25rem', width: '100%' }}>
             
             {/* Student Card */}
-            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer' }} onClick={() => handleRoleSelect('student')}>
-              <div style={{ padding: '1.25rem', background: 'rgba(109, 40, 217, 0.1)', borderRadius: '1rem', color: 'var(--primary)', marginBottom: '1.5rem' }}>
-                <GraduationCap size={40} />
+            <div className="glass-card" style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer' }} onClick={() => handleRoleSelect('student')}>
+              <div style={{ padding: '1rem', background: 'rgba(109, 40, 217, 0.1)', borderRadius: '1rem', color: 'var(--primary)', marginBottom: '1.25rem' }}>
+                <GraduationCap size={36} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Student Login</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Access timetable, exams, pay fees, file complaints, and view notifications.</p>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Student Login</h3>
+              <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '1.25rem' }}>Access timetable, exams, pay fees, file complaints, and view notifications.</p>
               <button style={{ width: '100%', padding: '0.75rem', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>Enter Student Portal</button>
             </div>
 
             {/* Staff Card */}
-            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer' }} onClick={() => handleRoleSelect('staff')}>
-              <div style={{ padding: '1.25rem', background: 'rgba(37, 99, 235, 0.1)', borderRadius: '1rem', color: 'var(--secondary)', marginBottom: '1.5rem' }}>
-                <Briefcase size={40} />
+            <div className="glass-card" style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer' }} onClick={() => handleRoleSelect('staff')}>
+              <div style={{ padding: '1rem', background: 'rgba(37, 99, 235, 0.1)', borderRadius: '1rem', color: 'var(--secondary)', marginBottom: '1.25rem' }}>
+                <Briefcase size={36} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Staff Login</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Coordinate classes, manage complaints, respond to consultation requests.</p>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Staff Login</h3>
+              <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '1.25rem' }}>Coordinate classes, manage complaints, respond to consultation requests.</p>
               <button style={{ width: '100%', padding: '0.75rem', background: 'var(--secondary)', color: '#fff', border: 'none', borderRadius: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>Enter Staff Portal</button>
             </div>
 
             {/* Admin Card */}
-            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer' }} onClick={() => handleRoleSelect('admin')}>
-              <div style={{ padding: '1.25rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '1rem', color: '#ef4444', marginBottom: '1.5rem' }}>
-                <ShieldAlert size={40} />
+            <div className="glass-card" style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', cursor: 'pointer' }} onClick={() => handleRoleSelect('admin')}>
+              <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '1rem', color: '#ef4444', marginBottom: '1.25rem' }}>
+                <ShieldAlert size={36} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Admin Login</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Manage academic configurations, overall notifications, and dashboard stats.</p>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Admin Login</h3>
+              <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '1.25rem' }}>Manage academic configurations, overall notifications, and dashboard stats.</p>
               <button style={{ width: '100%', padding: '0.75rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>Enter Admin Portal</button>
             </div>
 
           </div>
         </div>
       ) : (
-        <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '420px', padding: '2.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, textTransform: 'capitalize' }}>{role} Login</h3>
+        <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '420px', padding: 'clamp(1.25rem, 5vw, 2.5rem)', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 700, textTransform: 'capitalize', margin: 0 }}>{role} Login</h3>
             <button onClick={() => setRole(null)} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}>Change Portal</button>
           </div>
 

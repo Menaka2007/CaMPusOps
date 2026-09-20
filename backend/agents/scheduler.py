@@ -151,14 +151,39 @@ class SchedulerAgent(BaseAgent):
                 res += f"- **{e['title']}** ({e['date']}): {e['content']}\n"
             return res
 
-        # Default calendar display
-        cursor.execute("SELECT title, date, type FROM academic_calendar ORDER BY date ASC")
-        cal = cursor.fetchall()
-        res = "### 📅 Sri Eshwar Academic Calendar & Planner\n"
-        for item in cal:
-            clean_title = item['title'].split(" |tags:")[0].split(" |category:")[0].strip()
-            res += f"- **{clean_title}** ({item['type'].capitalize()}): {item['date']}\n"
-        return res
+        # Academic Calendar & Planner
+        elif "calendar" in q or "academic calendar" in q or "planner" in q or "event" in q or "events" in q:
+            cursor.execute("SELECT title, date, type FROM academic_calendar ORDER BY date ASC")
+            cal = cursor.fetchall()
+            res = "### 📅 Sri Eshwar Academic Calendar & Planner\n"
+            for item in cal:
+                clean_title = item['title'].split(" |tags:")[0].split(" |category:")[0].strip()
+                res += f"- **{clean_title}** ({item['type'].capitalize()}): {item['date']}\n"
+            return res
+
+        # Greeting fallback if directly invoked
+        elif any(g in q for g in ["hello", "hi", "hey", "good morning", "good afternoon"]):
+            return (
+                f"Hello {student_name}! 👋 I am your **Scheduler Agent**.\n\n"
+                "I can assist you with:\n"
+                "- ⏰ **Today's Classes**: *\"What is my schedule today?\"*\n"
+                "- 📅 **Class Timetable**: *\"Show my timetable\"*\n"
+                "- 📊 **Attendance & Cutoff**: *\"Check my attendance\"*\n"
+                "- 📝 **Exam Schedules**: *\"Show internal exam dates\"*\n"
+                "- 🌴 **Holidays & Calendar**: *\"Show academic calendar\"*\n"
+                "- 👨‍🏫 **Faculty Booking**: *\"Book appointment with faculty\"*"
+            )
+
+        # General Schedule Fallback
+        return (
+            f"I couldn't find schedule details for *\"{query}\"*.\n\n"
+            "Try asking about:\n"
+            "- **Today's classes** (*'What classes do I have today?'*)\n"
+            "- **Weekly Timetable** (*'Show CSE timetable'*)\n"
+            "- **Attendance** (*'Check my attendance'*)\n"
+            "- **Exams** (*'When are the internal exams?'*)\n"
+            "- **Academic Calendar** (*'Show academic calendar'*)"
+        )
 
     def check_redirection(self, q: str) -> str:
         # Check if query targets other agents (complaints, docs, fees, lost items)
@@ -722,7 +747,8 @@ class SchedulerAgent(BaseAgent):
             header = f"### 📚 Today's Class Schedule ({day_to_query})\n\n"
 
         cursor.execute(
-            "SELECT slot_1, slot_2, slot_3, slot_4 FROM timetable WHERE dept = ? AND year = ? AND day = ?",
+            "SELECT slot_1, slot_2, slot_3, slot_4, slot_5, slot_6 "
+            "FROM timetable WHERE dept = ? AND year = ? AND day = ?",
             (dept, year, day_to_query)
         )
         row = cursor.fetchone()
@@ -741,6 +767,8 @@ class SchedulerAgent(BaseAgent):
             ("Slot 2", "10:30 AM – 12:00 PM", row["slot_2"]),
             ("Slot 3", "01:00 PM – 02:30 PM", row["slot_3"]),
             ("Slot 4", "02:30 PM – 04:00 PM", row["slot_4"]),
+            ("Slot 5", "04:00 PM – 05:00 PM", row["slot_5"]),
+            ("Slot 6", "05:00 PM – 06:00 PM", row["slot_6"]),
         ]
 
         res = header
