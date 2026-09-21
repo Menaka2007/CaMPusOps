@@ -13,6 +13,10 @@ from orchestrator import OrchestratorAgent, DB_PATH
 
 app = FastAPI(title="Smart Campus Assistant Backend")
 
+@app.get("/")
+def root():
+    return {"status": "ok", "service": "Smart Campus Assistant Backend"}
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
