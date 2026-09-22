@@ -31,6 +31,10 @@ except Exception:
     except Exception:
         pass
 
+@app.get("/")
+def root():
+    return {"message": "CampusOps API is running"}
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
