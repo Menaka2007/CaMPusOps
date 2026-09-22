@@ -16,8 +16,8 @@ const Login = ({ onLoginSuccess }) => {
     setError('');
     // Auto-fill credentials for easy evaluation
     if (selectedRole === 'student') {
-      setRollNo('717721L101');
-      setFullName('Aravind Swamy');
+      setRollNo('24EE026');
+      setFullName('Menaka');
     } else if (selectedRole === 'staff') {
       setRollNo('STAFF001');
       setFullName('Dr. Balasubramanian');
@@ -38,17 +38,10 @@ const Login = ({ onLoginSuccess }) => {
     if (role === 'student') {
       const trimmedName = fullName.trim();
       const allowedNames = [
-        "Aravind Swamy",
-        "J. Samhitha",
-        "S. Chandrika",
-        "Menaka S",
-        "Vinisha",
-        "Anushya",
-        "Varsha",
-        "Kanishka",
-        "Prega",
-        "Akshaya",
-        "Madhumita"
+        "Menaka",
+        "Chandrighaa",
+        "Samyuktha",
+        "Akshaya"
       ];
       
       const lowerNames = allowedNames.map(name => name.toLowerCase());

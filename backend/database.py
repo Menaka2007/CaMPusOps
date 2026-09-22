@@ -215,11 +215,6 @@ def init_db():
         ("STAFF001", "Dr. Balasubramanian", "CSE", 0, "bala.cse@sece.ac.in", "staff"),
         ("ADMIN001", "Campus Registrar", "ADMIN", 0, "registrar@sece.ac.in", "admin")
     ]
-    students_data.extend(
-        (f"24CS3{index:02d}", f"CSE Year 3 Student {index:02d}", "CSE", 3,
-         f"cse.year3.{index:02d}@sece.ac.in", "student")
-        for index in range(1, 41)
-    )
     cursor.executemany("INSERT INTO students (roll_no, name, dept, year, email, role) VALUES (?, ?, ?, ?, ?, ?)", students_data)
 
     # 2. Faculty
@@ -330,55 +325,35 @@ def init_db():
 
     # 7. Fee records
     fees_data = [
-        ("717721L101", "Tuition Fee", 85000.0, 85000.0, "2026-06-30"),
-        ("717721L101", "Exam Fee", 3200.0, 0.0, "2026-08-15"),
-        ("717721L101", "Hostel Fee", 65000.0, 45000.0, "2026-07-15"),
-        ("717721L101", "Bus Fee", 22000.0, 22000.0, "2026-06-30"),
-        
-        ("717721L102", "Tuition Fee", 85000.0, 80000.0, "2026-06-30"),
-        ("717721L102", "Exam Fee", 3200.0, 3200.0, "2026-08-15"),
+        ("24EE026", "Tuition Fee", 85000.0, 85000.0, "2026-06-30"),
+        ("24EE026", "Exam Fee", 3200.0, 0.0, "2026-08-15"),
+        ("24EE026", "Bus Fee", 22000.0, 22000.0, "2026-06-30"),
 
-        ("717721L103", "Tuition Fee", 90000.0, 90000.0, "2026-06-30"),
-        ("717721L103", "Bus Fee", 18000.0, 10000.0, "2026-07-31"),
-        ("717721L103", "Library Fee", 1500.0, 1500.0, "2026-08-10"),
+        ("24EC045", "Tuition Fee", 85000.0, 80000.0, "2026-06-30"),
+        ("24EC045", "Exam Fee", 3200.0, 3200.0, "2026-08-15"),
+        ("24EC045", "Hostel Fee", 65000.0, 45000.0, "2026-07-15"),
 
-        ("717721L104", "Tuition Fee", 85000.0, 45000.0, "2026-06-30"),
-        ("717721L104", "Exam Fee", 3200.0, 0.0, "2026-08-15"),
+        ("24CS006", "Tuition Fee", 90000.0, 90000.0, "2026-06-30"),
+        ("24CS006", "Exam Fee", 3200.0, 3200.0, "2026-08-15"),
+        ("24CS006", "Placement Training Fee", 10000.0, 5000.0, "2026-09-01"),
 
-        ("717721L105", "Tuition Fee", 85000.0, 85000.0, "2026-06-30"),
-        ("717721L105", "Exam Fee", 3200.0, 3200.0, "2026-08-15"),
-        ("717721L105", "Placement Training Fee", 10000.0, 5000.0, "2026-09-01"),
-
-        ("717721L106", "Tuition Fee", 85000.0, 85000.0, "2026-06-30"),
-        ("717721L106", "Hostel Fee", 70000.0, 70000.0, "2026-07-15"),
-
-        ("717721L107", "Tuition Fee", 88000.0, 60000.0, "2026-06-30"),
-        ("717721L107", "Exam Fee", 3400.0, 3400.0, "2026-08-15"),
-        ("717721L107", "Lab Fee", 5000.0, 0.0, "2026-08-20"),
-
-        ("717721L108", "Tuition Fee", 85000.0, 85000.0, "2026-06-30"),
-        ("717721L108", "Bus Fee", 25000.0, 15000.0, "2026-07-31"),
-
-        ("717721L109", "Tuition Fee", 85000.0, 85000.0, "2026-06-30"),
-        ("717721L109", "Exam Fee", 3200.0, 3200.0, "2026-08-15"),
-
-        ("717721L110", "Tuition Fee", 92000.0, 50000.0, "2026-06-30"),
-        ("717721L110", "Exam Fee", 3200.0, 0.0, "2026-08-15"),
-        ("717721L110", "Hostel Fee", 65000.0, 65000.0, "2026-07-15")
+        ("24CC052", "Tuition Fee", 85000.0, 45000.0, "2026-06-30"),
+        ("24CC052", "Exam Fee", 3200.0, 0.0, "2026-08-15"),
+        ("24CC052", "Bus Fee", 18000.0, 10000.0, "2026-07-31")
     ]
     cursor.executemany("INSERT INTO fees (roll_no, type, total, paid, due_date) VALUES (?, ?, ?, ?, ?)", fees_data)
 
     # 8. Complaints
     complaints_data = [
-        ("717721L101", "Classroom Complaint", "AC remote is missing in Room 304", "In Progress", "2026-07-28"),
-        ("717721L102", "Hostel Complaint", "No hot water in Block C bathroom", "Resolved", "2026-07-25")
+        ("24EE026", "Classroom Complaint", "AC remote is missing in Room 304", "In Progress", "2026-07-28"),
+        ("24EC045", "Hostel Complaint", "No hot water in Block C bathroom", "Resolved", "2026-07-25")
     ]
     cursor.executemany("INSERT INTO complaints (roll_no, category, description, status, date) VALUES (?, ?, ?, ?, ?)", complaints_data)
 
     # 9. Documents
     docs_data = [
-        ("717721L101", "Bonafide Certificate", "Approved & Ready to Collect", "2026-07-27"),
-        ("717721L101", "No Due Certificate", "Pending Department Approval", "2026-07-29")
+        ("24EE026", "Bonafide Certificate", "Approved & Ready to Collect", "2026-07-27"),
+        ("24CS006", "No Due Certificate", "Pending Department Approval", "2026-07-29")
     ]
     cursor.executemany("INSERT INTO documents (roll_no, type, status, requested_date) VALUES (?, ?, ?, ?)", docs_data)
 
@@ -405,85 +380,75 @@ def init_db():
 
     # 12. Reminders
     reminders_data = [
-        ("717721L101", "Submit ML Lab Report", "2026-08-05", "11:59 PM"),
-        ("717721L101", "Pay Exam Fee", "2026-08-10", "04:00 PM")
+        ("24EE026", "Submit Lab Report", "2026-08-05", "11:59 PM"),
+        ("24EE026", "Pay Exam Fee", "2026-08-10", "04:00 PM")
     ]
     cursor.executemany("INSERT INTO reminders (roll_no, title, date, time) VALUES (?, ?, ?, ?)", reminders_data)
 
     # 13. Assignments
     assignments_data = [
-        ("717721L101", "Compiler Design", "Assignment 2 - Parsing Trees", "2026-08-08", "pending"),
-        ("717721L101", "Machine Learning", "Project Proposal submission", "2026-08-12", "pending")
+        ("24CS006", "Compiler Design", "Assignment 2 - Parsing Trees", "2026-08-08", "pending"),
+        ("24CS006", "Machine Learning", "Project Proposal submission", "2026-08-12", "pending")
     ]
     cursor.executemany("INSERT INTO assignments (roll_no, subject, title, due_date, status) VALUES (?, ?, ?, ?, ?)", assignments_data)
 
     # 14. Faculty Bookings
     bookings_data = [
-        ("Aravind Swamy", "717721L101", "CSE", "Dr. Ramakrishnan", "2026-08-02", "10:30 AM", "Project Review", "Confirmed")
+        ("Samyuktha", "24CS006", "CSE", "Dr. Ramakrishnan", "2026-08-02", "10:30 AM", "Project Review", "Confirmed")
     ]
     cursor.executemany("INSERT INTO faculty_bookings (student_name, reg_no, dept, faculty_name, date, time, purpose, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", bookings_data)
 
     # 15. Attendance
     attendance_data = [
-        # 717721L101 (Aravind Swamy - CSE)
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-01", "717721L101", "present"),
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-03", "717721L101", "present"),
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-05", "717721L101", "present"),
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-08", "717721L101", "absent"),
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-10", "717721L101", "present"),
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-12", "717721L101", "present"),
+        # 24EE026 (Menaka - EEE Y2)
+        ("EEE", 2, "Circuit Theory", 1, "2026-08-01", "24EE026", "present"),
+        ("EEE", 2, "Circuit Theory", 1, "2026-08-03", "24EE026", "present"),
+        ("EEE", 2, "Circuit Theory", 1, "2026-08-05", "24EE026", "absent"),
+        ("EEE", 2, "Circuit Theory", 1, "2026-08-08", "24EE026", "present"),
+        ("EEE", 2, "Electrical Machines", 2, "2026-08-02", "24EE026", "present"),
+        ("EEE", 2, "Electrical Machines", 2, "2026-08-06", "24EE026", "present"),
+        ("EEE", 2, "Electrical Machines", 2, "2026-08-09", "24EE026", "absent"),
+        ("EEE", 2, "Electrical Machines", 2, "2026-08-13", "24EE026", "present"),
+        ("EEE", 2, "Measurements", 3, "2026-08-02", "24EE026", "present"),
+        ("EEE", 2, "Measurements", 3, "2026-08-07", "24EE026", "absent"),
+        ("EEE", 2, "Measurements", 3, "2026-08-11", "24EE026", "absent"),
+        ("EEE", 2, "Measurements", 3, "2026-08-14", "24EE026", "present"),
 
-        ("CSE", 1, "Technical English", 2, "2026-08-01", "717721L101", "present"),
-        ("CSE", 1, "Technical English", 2, "2026-08-04", "717721L101", "present"),
-        ("CSE", 1, "Technical English", 2, "2026-08-07", "717721L101", "present"),
-        ("CSE", 1, "Technical English", 2, "2026-08-11", "717721L101", "present"),
-        ("CSE", 1, "Technical English", 2, "2026-08-14", "717721L101", "present"),
+        # 24EC045 (Chandrighaa - ECE Y3)
+        ("ECE", 3, "VLSI Design", 1, "2026-08-01", "24EC045", "present"),
+        ("ECE", 3, "VLSI Design", 1, "2026-08-03", "24EC045", "present"),
+        ("ECE", 3, "VLSI Design", 1, "2026-08-06", "24EC045", "present"),
+        ("ECE", 3, "VLSI Design", 1, "2026-08-08", "24EC045", "absent"),
+        ("ECE", 3, "Digital Signal Processing", 2, "2026-08-02", "24EC045", "present"),
+        ("ECE", 3, "Digital Signal Processing", 2, "2026-08-05", "24EC045", "present"),
+        ("ECE", 3, "Digital Signal Processing", 2, "2026-08-09", "24EC045", "present"),
+        ("ECE", 3, "Microcontrollers", 3, "2026-08-03", "24EC045", "absent"),
+        ("ECE", 3, "Microcontrollers", 3, "2026-08-07", "24EC045", "absent"),
+        ("ECE", 3, "Microcontrollers", 3, "2026-08-10", "24EC045", "present"),
 
-        ("CSE", 1, "Engineering Physics", 3, "2026-08-02", "717721L101", "present"),
-        ("CSE", 1, "Engineering Physics", 3, "2026-08-05", "717721L101", "absent"),
-        ("CSE", 1, "Engineering Physics", 3, "2026-08-09", "717721L101", "absent"),
-        ("CSE", 1, "Engineering Physics", 3, "2026-08-12", "717721L101", "absent"),
-        ("CSE", 1, "Engineering Physics", 3, "2026-08-15", "717721L101", "present"), # 2/5 = 40% (Low attendance alert!)
+        # 24CS006 (Samyuktha - CSE Y4)
+        ("CSE", 4, "Cryptography & Security", 1, "2026-08-01", "24CS006", "present"),
+        ("CSE", 4, "Cryptography & Security", 1, "2026-08-03", "24CS006", "present"),
+        ("CSE", 4, "Cryptography & Security", 1, "2026-08-06", "24CS006", "present"),
+        ("CSE", 4, "Cryptography & Security", 1, "2026-08-08", "24CS006", "present"),
+        ("CSE", 4, "Ad Hoc Networks", 2, "2026-08-02", "24CS006", "present"),
+        ("CSE", 4, "Ad Hoc Networks", 2, "2026-08-05", "24CS006", "absent"),
+        ("CSE", 4, "Ad Hoc Networks", 2, "2026-08-09", "24CS006", "present"),
+        ("CSE", 4, "Project Phase II", 3, "2026-08-02", "24CS006", "present"),
+        ("CSE", 4, "Project Phase II", 3, "2026-08-04", "24CS006", "present"),
+        ("CSE", 4, "Project Phase II", 3, "2026-08-07", "24CS006", "present"),
 
-        ("CSE", 1, "Programming in C", 4, "2026-08-02", "717721L101", "present"),
-        ("CSE", 1, "Programming in C", 4, "2026-08-06", "717721L101", "present"),
-        ("CSE", 1, "Programming in C", 4, "2026-08-09", "717721L101", "present"),
-        ("CSE", 1, "Programming in C", 4, "2026-08-13", "717721L101", "present"),
-
-        # 717721L102 (J. Samhitha)
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-01", "717721L102", "present"),
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-03", "717721L102", "present"),
-        ("CSE", 1, "Engineering Math I", 1, "2026-08-05", "717721L102", "present"),
-        ("CSE", 1, "Technical English", 2, "2026-08-01", "717721L102", "present"),
-        ("CSE", 1, "Engineering Physics", 3, "2026-08-02", "717721L102", "present"),
-        ("CSE", 1, "Programming in C", 4, "2026-08-02", "717721L102", "present"),
-
-        # 717721L106 (Kanishka - CSE Y3)
-        ("CSE", 3, "Machine Learning", 1, "2026-08-01", "717721L106", "present"),
-        ("CSE", 3, "Machine Learning", 1, "2026-08-03", "717721L106", "present"),
-        ("CSE", 3, "Machine Learning", 1, "2026-08-06", "717721L106", "present"),
-        ("CSE", 3, "Machine Learning", 1, "2026-08-08", "717721L106", "present"),
-        ("CSE", 3, "Machine Learning", 1, "2026-08-10", "717721L106", "present"),
-        ("CSE", 3, "Compiler Design", 2, "2026-08-02", "717721L106", "present"),
-        ("CSE", 3, "Compiler Design", 2, "2026-08-05", "717721L106", "absent"),
-        ("CSE", 3, "Compiler Design", 2, "2026-08-09", "717721L106", "present"),
-        ("CSE", 3, "Data Science", 3, "2026-08-02", "717721L106", "present"),
-        ("CSE", 3, "Data Science", 3, "2026-08-04", "717721L106", "present"),
-
-        # 717721L111 (Menaka S - IT Y4)
-        ("IT", 4, "Cyber Security", 1, "2026-08-01", "717721L111", "present"),
-        ("IT", 4, "Cyber Security", 1, "2026-08-03", "717721L111", "present"),
-        ("IT", 4, "Cyber Security", 1, "2026-08-06", "717721L111", "present"),
-        ("IT", 4, "Cyber Security", 1, "2026-08-08", "717721L111", "absent"),
-        ("IT", 4, "Cyber Security", 1, "2026-08-11", "717721L111", "present"),
-        ("IT", 4, "Mobile Computing", 2, "2026-08-02", "717721L111", "present"),
-        ("IT", 4, "Mobile Computing", 2, "2026-08-05", "717721L111", "present"),
-        ("IT", 4, "Mobile Computing", 2, "2026-08-09", "717721L111", "present"),
-        ("IT", 4, "Project Work Phase 2", 3, "2026-08-02", "717721L111", "present"),
-        ("IT", 4, "Project Work Phase 2", 3, "2026-08-04", "717721L111", "present"),
-        ("IT", 4, "Big Data Analytics", 4, "2026-08-03", "717721L111", "absent"),
-        ("IT", 4, "Big Data Analytics", 4, "2026-08-07", "717721L111", "absent"),
-        ("IT", 4, "Big Data Analytics", 4, "2026-08-10", "717721L111", "present") # 1/3 = 33.3%
+        # 24CC052 (Akshaya - CCE Y2)
+        ("CCE", 2, "Digital Electronics", 1, "2026-08-01", "24CC052", "present"),
+        ("CCE", 2, "Digital Electronics", 1, "2026-08-03", "24CC052", "absent"),
+        ("CCE", 2, "Digital Electronics", 1, "2026-08-06", "24CC052", "absent"),
+        ("CCE", 2, "Digital Electronics", 1, "2026-08-08", "24CC052", "present"),
+        ("CCE", 2, "Data Structures", 2, "2026-08-02", "24CC052", "present"),
+        ("CCE", 2, "Data Structures", 2, "2026-08-05", "24CC052", "present"),
+        ("CCE", 2, "Data Structures", 2, "2026-08-09", "24CC052", "present"),
+        ("CCE", 2, "Mathematics III", 3, "2026-08-03", "24CC052", "absent"),
+        ("CCE", 2, "Mathematics III", 3, "2026-08-07", "24CC052", "absent"),
+        ("CCE", 2, "Mathematics III", 3, "2026-08-10", "24CC052", "present")
     ]
     cursor.executemany("INSERT INTO attendance (dept, year, subject, slot_index, date, roll_no, status) VALUES (?, ?, ?, ?, ?, ?, ?)", attendance_data)
 

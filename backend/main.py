@@ -138,17 +138,10 @@ def login_student(request: StudentLoginRequest):
     entered_name = request.name.strip()
     
     allowed_students = [
-        "Aravind Swamy",
-        "J. Samhitha",
-        "S. Chandrika",
-        "Menaka S",
-        "Vinisha",
-        "Anushya",
-        "Varsha",
-        "Kanishka",
-        "Prega",
-        "Akshaya",
-        "Madhumita"
+        "Menaka",
+        "Chandrighaa",
+        "Samyuktha",
+        "Akshaya"
     ]
     
     # Ensure no duplicates in the configuration
