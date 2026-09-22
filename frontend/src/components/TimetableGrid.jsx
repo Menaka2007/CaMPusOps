@@ -2,12 +2,14 @@ import React from 'react';
 import { BookOpen, Clock, MapPin, User } from 'lucide-react';
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const SLOTS = [1, 2, 3, 4];
+const SLOTS = [1, 2, 3, 4, 5, 6];
 const SLOT_TIMES = {
   1: "09:00 AM - 10:30 AM",
   2: "10:30 AM - 12:00 PM",
   3: "01:00 PM - 02:30 PM",
-  4: "02:30 PM - 04:00 PM"
+  4: "02:30 PM - 04:00 PM",
+  5: "04:00 PM - 05:00 PM",
+  6: "05:00 PM - 06:00 PM"
 };
 
 export const getSubjectDetails = (subject) => {

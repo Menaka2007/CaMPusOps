@@ -290,14 +290,75 @@ def init_db():
         ("CSE", 4, "Thursday", "Professional Elective V", "Cryptography & Security", "Ad Hoc Networks", "Project Phase II", "", ""),
         ("CSE", 4, "Friday", "Project Phase II", "Project Phase II", "Project Phase II", "Project Phase II", "", ""),
 
-        # ECE Year 1
-        ("ECE", 1, "Monday", "Technical English", "Engineering Math I", "Engineering Physics", "Basic Electrical Engg", "", ""),
-        ("ECE", 1, "Tuesday", "Engineering Physics", "Basic Electrical Engg", "Engineering Math I", "Technical English", "", ""),
-        ("ECE", 1, "Wednesday", "Engineering Math I", "Basic Electrical Engg", "Programming in C", "Physics Lab", "", ""),
-        ("ECE", 1, "Thursday", "Technical English", "Programming in C", "Engineering Math I", "Basic Electrical Engg", "", ""),
-        ("ECE", 1, "Friday", "Basic Electrical Engg", "Programming in C", "Engineering Physics", "Python Programming", "", ""),
+        # EEE Year 1
+        ("EEE", 1, "Monday", "Engineering Math I", "Physics", "Technical English", "Chemistry", "", ""),
+        ("EEE", 1, "Tuesday", "Physics", "Chemistry", "Engineering Math I", "Technical English", "", ""),
+        ("EEE", 1, "Wednesday", "Engineering Math I", "Programming in C", "Physics", "Engineering Graphics", "", ""),
+        ("EEE", 1, "Thursday", "Technical English", "Programming in C", "Engineering Math I", "Physics", "", ""),
+        ("EEE", 1, "Friday", "Chemistry", "Programming in C", "Engineering Math I", "Workshop", "", ""),
 
-        # ECE Year 3
+        # EEE Year 2
+        ("EEE", 2, "Monday", "Electrical Machines I", "Network Theory", "Analog Electronics", "Signals & Systems", "Electrical Lab", "Power Electronics Lab"),
+        ("EEE", 2, "Tuesday", "Network Theory", "Electrical Machines I", "Electromagnetic Fields", "Analog Electronics", "Electrical Machines Lab", ""),
+        ("EEE", 2, "Wednesday", "Power Electronics", "Network Theory", "Electrical Machines I", "Electrical Measurements", "Electrical Measurements Lab", ""),
+        ("EEE", 2, "Thursday", "Analog Electronics", "Power Electronics", "Signals & Systems", "Network Theory", "Technical Seminar", ""),
+        ("EEE", 2, "Friday", "Electrical Machines I", "Power Electronics", "Measurements", "Signals & Systems", "Library", ""),
+
+        # EEE Year 3
+        ("EEE", 3, "Monday", "Power Systems II", "Power Electronics", "Microcontrollers", "Control Systems", "Renewable Energy", "Soft Skills"),
+        ("EEE", 3, "Tuesday", "Control Systems", "Electrical Drives", "Power Systems II", "Microcontrollers", "Renewable Energy", "Power Electronics"),
+        ("EEE", 3, "Wednesday", "Microcontrollers", "Power Systems II", "Control Systems", "Electrical Drives", "Power Electronics", "Renewable Energy"),
+        ("EEE", 3, "Thursday", "Electrical Drives", "Power Electronics", "Microcontrollers", "Control Systems", "Power Systems II", "Soft Skills"),
+        ("EEE", 3, "Friday", "Renewable Energy", "Control Systems Lab", "Control Systems Lab", "Power Electronics", "Electrical Drives", "Project"),
+
+        # EEE Year 4
+        ("EEE", 4, "Monday", "Smart Grid", "Electric Vehicles", "Professional Elective", "Project", "", ""),
+        ("EEE", 4, "Tuesday", "Electric Vehicles", "Smart Grid", "Professional Elective", "Project", "", ""),
+        ("EEE", 4, "Wednesday", "Professional Elective", "Smart Grid", "Electric Vehicles", "Project", "", ""),
+        ("EEE", 4, "Thursday", "Smart Grid", "Professional Elective", "Electric Vehicles", "Project", "", ""),
+        ("EEE", 4, "Friday", "Project", "Project", "Project", "Project", "", ""),
+
+        # ECE Year 2
+        ("ECE", 2, "Monday", "Electronic Circuits", "Signals & Systems", "Digital Electronics", "Network Theory", "", ""),
+        ("ECE", 2, "Tuesday", "Digital Electronics", "Electronic Circuits", "Signals & Systems", "Microprocessors", "", ""),
+        ("ECE", 2, "Wednesday", "Network Theory", "Digital Electronics", "Electronic Circuits", "Microprocessors", "", ""),
+        ("ECE", 2, "Thursday", "Signals & Systems", "Microprocessors", "Digital Electronics", "Electronic Circuits", "", ""),
+        ("ECE", 2, "Friday", "Electronic Circuits", "Digital Electronics Lab", "Digital Electronics Lab", "Signals & Systems", "", ""),
+
+        # ECE Year 4
+        ("ECE", 4, "Monday", "5G Communication", "IoT", "Professional Elective", "Project", "", ""),
+        ("ECE", 4, "Tuesday", "IoT", "5G Communication", "Professional Elective", "Project", "", ""),
+        ("ECE", 4, "Wednesday", "Professional Elective", "5G Communication", "IoT", "Project", "", ""),
+        ("ECE", 4, "Thursday", "5G Communication", "Professional Elective", "IoT", "Project", "", ""),
+        ("ECE", 4, "Friday", "Project", "Project", "Project", "Project", "", ""),
+
+        # CCE Year 1
+        ("CCE", 1, "Monday", "Engineering Math I", "Physics", "Technical English", "Chemistry", "", ""),
+        ("CCE", 1, "Tuesday", "Physics", "Chemistry", "Engineering Math I", "Technical English", "", ""),
+        ("CCE", 1, "Wednesday", "Engineering Math I", "Programming in C", "Physics", "Engineering Graphics", "", ""),
+        ("CCE", 1, "Thursday", "Technical English", "Programming in C", "Engineering Math I", "Physics", "", ""),
+        ("CCE", 1, "Friday", "Chemistry", "Programming in C", "Engineering Math I", "Workshop", "", ""),
+
+        # CCE Year 2
+        ("CCE", 2, "Monday", "Data Structures", "Digital Electronics", "Computer Networks", "OOPs", "", ""),
+        ("CCE", 2, "Tuesday", "Computer Networks", "Data Structures", "Database Systems", "OOPs", "", ""),
+        ("CCE", 2, "Wednesday", "Digital Electronics", "Database Systems", "Data Structures", "Computer Networks", "", ""),
+        ("CCE", 2, "Thursday", "OOPs", "Data Structures", "Digital Electronics", "Database Systems", "", ""),
+        ("CCE", 2, "Friday", "Computer Networks", "Data Structures Lab", "Data Structures Lab", "OOPs", "", ""),
+
+        # CCE Year 3
+        ("CCE", 3, "Monday", "Cloud Computing", "Cybersecurity", "IoT", "AI & ML", "Data Analytics", "Soft Skills"),
+        ("CCE", 3, "Tuesday", "AI & ML", "Cloud Computing", "Cybersecurity", "IoT", "Data Analytics", "Cloud Computing"),
+        ("CCE", 3, "Wednesday", "Cybersecurity", "AI & ML", "Cloud Computing", "Data Analytics", "IoT", "AI & ML"),
+        ("CCE", 3, "Thursday", "IoT", "Cloud Computing", "AI & ML", "Cybersecurity", "Data Analytics", "Soft Skills"),
+        ("CCE", 3, "Friday", "Data Analytics", "AI Lab", "AI Lab", "Cloud Computing", "Cybersecurity", "Project"),
+
+        # CCE Year 4
+        ("CCE", 4, "Monday", "Cloud Security", "Advanced AI", "Professional Elective", "Project", "", ""),
+        ("CCE", 4, "Tuesday", "Advanced AI", "Cloud Security", "Professional Elective", "Project", "", ""),
+        ("CCE", 4, "Wednesday", "Professional Elective", "Advanced AI", "Cloud Security", "Project", "", ""),
+        ("CCE", 4, "Thursday", "Cloud Security", "Professional Elective", "Advanced AI", "Project", "", ""),
+        ("CCE", 4, "Friday", "Project", "Project", "Project", "Project", "", ""),
         ("ECE", 3, "Monday", "VLSI Design", "Microcontrollers", "Digital Signal Processing", "Antennas", "PE", "LDIC"),
         ("ECE", 3, "Tuesday", "Microcontrollers", "Antennas", "VLSI Design", "DSP Lab", "PE", "LDIC"),
         ("ECE", 3, "Wednesday", "Digital Signal Processing", "VLSI Design", "Microcontrollers", "Antennas", "PE", "LDIC"),

@@ -29,14 +29,14 @@ class SchedulerAgent(BaseAgent):
             return reminder_response
 
         # 4. Faculty Appointment Booking Initializer
-        if "book" in q or "appointment" in q or "consultation" in q or "meet" in q:
+        if ("book" in q or "appointment" in q or "consultation" in q) and not any(w in q for w in ["timetable", "schedule", "class", "classes"]):
             return self.initiate_booking(query, roll_no, student_name)
 
         # 4.5 Today's Classes & Daily Schedule Check (Interactive AI)
         is_today_query = (
             ("today" in q and any(w in q for w in ["shedule", "schedule", "class", "classes", "timetable", "timetbl", "period", "routine", "what", "how", "plan"]))
             or any(phrase in q for phrase in [
-                "shedule today", "schedule today", "today schedule", "today shedule", 
+                "shedule today", "schedule today", "today schedule", "today shedule",
                 "today's schedule", "todays schedule", "today's shedule", "todays shedule",
                 "classes today", "today classes", "today's classes", "todays classes",
                 "class today", "today class", "today's class", "todays class",
@@ -45,7 +45,10 @@ class SchedulerAgent(BaseAgent):
             ])
             or (any(d in q for d in ["monday", "tuesday", "wednesday", "thursday", "friday"]) and any(w in q for w in ["class", "classes", "schedule", "shedule", "timetable", "period"]))
         )
-        if is_today_query and not any(k in q for k in ["exam", "holiday", "attendance", "eligibility", "cutoff"]):
+        is_timetable_query = any(w in q for w in ["timetable", "my timetable", "show timetable", "class schedule", "weekly"])
+        if (is_today_query or is_timetable_query) and not any(k in q for k in ["exam", "holiday", "attendance", "eligibility", "cutoff"]):
+            if is_timetable_query and not is_today_query:
+                return self.get_full_timetable(roll_no, student_name)
             return self.get_today_classes_interactive(roll_no, student_name, query)
 
         # 5. Smart Dashboard Check
@@ -704,6 +707,37 @@ class SchedulerAgent(BaseAgent):
             res += f"| {sub} | {a} / {t} | {pct}% | {st} |\n"
 
         res += "\n💡 *Tip: Check your live session log in the new **Attendance & Eligibility** tab on your dashboard.*"
+        return res
+
+    def get_full_timetable(self, roll_no: str, student_name: str) -> str:
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT dept, year, name FROM students WHERE roll_no = ?", (roll_no,))
+        student = cursor.fetchone()
+        dept = student["dept"] if student else "CSE"
+        year = student["year"] if student else 1
+        display_name = student["name"] if student else student_name
+
+        cursor.execute("SELECT day, slot_1, slot_2, slot_3, slot_4, slot_5, slot_6 FROM timetable WHERE dept = ? AND year = ? ORDER BY id", (dept, year))
+        rows = cursor.fetchall()
+        conn.close()
+
+        if not rows:
+            return f"Hi {display_name}! I couldn't find a timetable for {dept} Year {year} yet. Please check back later or contact your department."
+
+        days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        rows_sorted = sorted(rows, key=lambda r: days_order.index(r["day"]) if r["day"] in days_order else 99)
+
+        res = f"### 📅 Your Weekly Timetable\n**{display_name}** | {dept} | Year {year}\n\n"
+        for row in rows_sorted:
+            res += f"**{row['day']}**\n"
+            slot_times = ["09:00–10:30 AM", "10:30–12:00 PM", "01:00–02:30 PM", "02:30–04:00 PM", "04:00–05:00 PM", "05:00–06:00 PM"]
+            for i in range(1, 7):
+                sub = row[f"slot_{i}"]
+                if sub:
+                    res += f"  - Period {i} ({slot_times[i-1]}): **{sub}**\n"
+            res += "\n"
+        res += "💡 Ask me *'What classes do I have today?'* for today's detailed schedule!"
         return res
 
     def get_today_classes_interactive(self, roll_no: str, student_name: str, query: str) -> str:
