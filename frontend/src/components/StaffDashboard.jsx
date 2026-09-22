@@ -169,44 +169,39 @@ const StaffDashboard = ({ user, onLogout }) => {
   const dept = user.dept || 'CSE';
 
   const fetchStudentsForAttendance = async (year) => {
-    const defaultStudentList = [
-      { roll_no: "717721L101", name: "Aravind Swamy" },
-      { roll_no: "717721L102", name: "J. Samhitha" },
-      { roll_no: "717721L103", name: "Vinisha" },
-      { roll_no: "717721L104", name: "Anushya" },
-      { roll_no: "717721L105", name: "Varsha" },
-      { roll_no: "717721L106", name: "Kanishka" },
-      { roll_no: "717721L107", name: "Prega" },
-      { roll_no: "717721L108", name: "Akshaya" },
-      { roll_no: "717721L109", name: "Madhumita" },
-      { roll_no: "717721L110", name: "S. Chandrika" },
-      { roll_no: "717721L111", name: "Menaka S" }
-    ];
+    // Generate 40 mock students for the selected year/dept
+    const generateMockStudents = (dept, year) => {
+      const prefix = `${dept.substring(0,2).toUpperCase()}${year}`;
+      return Array.from({ length: 40 }, (_, i) => ({
+        roll_no: `24${prefix}${String(i + 1).padStart(3, '0')}`,
+        name: `Student ${String(i + 1).padStart(2, '0')} (${dept} Y${year})`
+      }));
+    };
 
     try {
       const res = await fetch(apiUrl(`http://127.0.0.1:8000/api/staff/students?dept=${dept}&year=${year}`));
       if (res.ok) {
         let data = await res.json();
         if (!data || data.length === 0) {
-          data = defaultStudentList;
+          data = generateMockStudents(dept, year);
         }
         setStudents(data);
         const initial = {};
-        data.forEach(s => {
-          initial[s.roll_no] = 'present';
-        });
+        data.forEach(s => { initial[s.roll_no] = 'present'; });
         setAttendanceRecords(initial);
       } else {
-        setStudents(defaultStudentList);
+        const mock = generateMockStudents(dept, year);
+        setStudents(mock);
         const initial = {};
-        defaultStudentList.forEach(s => { initial[s.roll_no] = 'present'; });
+        mock.forEach(s => { initial[s.roll_no] = 'present'; });
         setAttendanceRecords(initial);
       }
     } catch (error) {
       console.error("Error fetching students:", error);
-      setStudents(defaultStudentList);
+      const mock = generateMockStudents(dept, year);
+      setStudents(mock);
       const initial = {};
-      defaultStudentList.forEach(s => { initial[s.roll_no] = 'present'; });
+      mock.forEach(s => { initial[s.roll_no] = 'present'; });
       setAttendanceRecords(initial);
     }
   };
