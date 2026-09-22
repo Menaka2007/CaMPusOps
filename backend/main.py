@@ -13,9 +13,23 @@ from orchestrator import OrchestratorAgent, DB_PATH
 
 app = FastAPI(title="Smart Campus Assistant Backend")
 
-@app.get("/")
-def root():
-    return {"status": "ok", "service": "Smart Campus Assistant Backend"}
+# Initialize DB on startup if empty (prevents data loss on Render redeploy)
+try:
+    from database import init_db, DB_PATH as _DB_PATH
+    import sqlite3 as _sqlite3
+    _conn = _sqlite3.connect(_DB_PATH)
+    _cur = _conn.cursor()
+    _cur.execute("SELECT COUNT(*) FROM students")
+    _count = _cur.fetchone()[0]
+    _conn.close()
+    if _count == 0:
+        init_db()
+except Exception:
+    try:
+        from database import init_db
+        init_db()
+    except Exception:
+        pass
 
 @app.get("/health")
 def health_check():
@@ -25,7 +39,13 @@ def health_check():
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://campusops-2.onrender.com",
+        "https://*.vercel.app",
+        "*"  # Keep open for mobile app access
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -138,10 +158,17 @@ def login_student(request: StudentLoginRequest):
     entered_name = request.name.strip()
     
     allowed_students = [
-        "Menaka",
-        "Chandrighaa",
-        "Samyuktha",
-        "Akshaya"
+        "Aravind Swamy",
+        "J. Samhitha",
+        "S. Chandrika",
+        "Menaka S",
+        "Vinisha",
+        "Anushya",
+        "Varsha",
+        "Kanishka",
+        "Prega",
+        "Akshaya",
+        "Madhumita"
     ]
     
     # Ensure no duplicates in the configuration
