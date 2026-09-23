@@ -111,13 +111,14 @@ const Dashboard = ({ user, onLogout }) => {
 
   const handleAgentSelect = (agentName) => {
     if (selectedAgent === agentName) {
-      setSelectedAgent(null); // Deselect
+      setSelectedAgent(null);
       setActiveAgent(null);
     } else {
       setSelectedAgent(agentName);
       setActiveAgent(agentName);
-      setResponse(null); // Show the interactive tab instead of text output
+      setResponse(null);
     }
+    setIsMobileSidebarOpen(false);
   };
 
   const handleActionClick = (action) => {
@@ -145,19 +146,27 @@ const Dashboard = ({ user, onLogout }) => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-gradient)' }}>
-      
+
+      {/* Mobile backdrop */}
+      {isMobileSidebarOpen && (
+        <div className="sidebar-backdrop" onClick={() => setIsMobileSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="glass-card" style={{ width: '290px', minWidth: '290px', margin: '1rem', marginRight: '0', display: 'flex', flexDirection: 'column', padding: '1.5rem', borderRadius: '1.25rem', height: 'calc(100vh - 2rem)', position: 'sticky', top: '1rem', boxSizing: 'border-box' }}>
+      <aside className={`glass-card ${isMobileSidebarOpen ? 'mobile-sidebar-drawer drawer-open' : 'mobile-sidebar-drawer'}`} style={{ width: '290px', minWidth: '290px', margin: '1rem', marginRight: '0', display: 'flex', flexDirection: 'column', padding: '1.5rem', borderRadius: '1.25rem', height: 'calc(100vh - 2rem)', position: 'sticky', top: '1rem', boxSizing: 'border-box' }}>
         
         {/* Profile Card */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(109, 40, 217, 0.1)', marginBottom: '1.5rem' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
             <UserIcon size={20} />
           </div>
-          <div style={{ overflow: 'hidden' }}>
+          <div style={{ overflow: 'hidden', flexGrow: 1 }}>
             <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user.name}</h4>
             <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>{user.role} | {user.roll_no}</span>
           </div>
+          <button onClick={() => setIsMobileSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'none' }} className="sidebar-close-btn">
+            <X size={20} />
+          </button>
         </div>
 
         {/* Direct Academic Portal - Timetable & Attendance */}
@@ -305,6 +314,17 @@ const Dashboard = ({ user, onLogout }) => {
 
       {/* Main Panel */}
       <main style={{ flexGrow: 1, minWidth: 0, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxSizing: 'border-box', overflowY: 'auto' }}>
+
+        {/* Mobile Top Bar */}
+        <div className="mobile-top-bar">
+          <button onClick={() => setIsMobileSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: '#1e1b4b' }}>
+            <Menu size={24} />
+          </button>
+          <span style={{ fontWeight: 800, fontSize: '1rem', color: '#1e1b4b' }}>Campus Assistant</span>
+          <button onClick={onLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '0.25rem' }}>
+            <LogOut size={20} />
+          </button>
+        </div>
         
         {/* Top Header */}
         <header className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2rem', border: '1px solid rgba(217, 119, 6, 0.25)', boxShadow: '0 8px 30px rgba(217, 119, 6, 0.08)' }}>

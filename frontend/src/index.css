@@ -285,6 +285,10 @@ input:focus, textarea:focus, select:focus {
     transform: translateX(0);
   }
 
+  .sidebar-close-btn {
+    display: flex !important;
+  }
+
   .sidebar-backdrop {
     display: block;
     position: fixed;
@@ -328,7 +332,28 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
-/* Chatbot Responsive Styling */
+/* Desktop: sidebar always visible */
+@media (min-width: 1024px) {
+  .mobile-sidebar-drawer {
+    position: sticky !important;
+    top: 1rem !important;
+    left: auto !important;
+    height: calc(100vh - 2rem) !important;
+    transform: none !important;
+    width: 290px !important;
+    min-width: 290px !important;
+    margin: 1rem !important;
+    margin-right: 0 !important;
+    border-radius: 1.25rem !important;
+    box-shadow: var(--glass-shadow) !important;
+    z-index: auto !important;
+  }
+
+  .mobile-top-bar {
+    display: none !important;
+  }
+}
+
 @media (max-width: 1023px) {
   .chatbot-rail-wrapper {
     position: fixed !important;
