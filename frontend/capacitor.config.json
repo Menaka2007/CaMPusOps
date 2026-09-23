@@ -1,0 +1,8 @@
+{
+  "appId": "com.campusops.app",
+  "appName": "Smart Campus Assistant",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
