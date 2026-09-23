@@ -161,27 +161,9 @@ def login(request: LoginRequest):
 def login_student(request: StudentLoginRequest):
     entered_name = request.name.strip()
     
-    allowed_students = [
-        "Aravind Swamy",
-        "J. Samhitha",
-        "S. Chandrika",
-        "Menaka S",
-        "Vinisha",
-        "Anushya",
-        "Varsha",
-        "Kanishka",
-        "Prega",
-        "Akshaya",
-        "Madhumita"
-    ]
-    
-    # Ensure no duplicates in the configuration
-    lower_names = [name.lower() for name in allowed_students]
-    if len(set(lower_names)) != len(allowed_students):
-        raise HTTPException(status_code=400, detail="Duplicate names are not allowed in the configuration.")
-        
-    # Check if the name matches one of the 10 registered students case-insensitively
-    if entered_name.lower() not in lower_names:
+    allowed_students = ["Menaka", "Chandrighaa", "Samyuktha", "Akshaya"]
+
+    if entered_name.lower() not in [n.lower() for n in allowed_students]:
         raise HTTPException(status_code=400, detail="Access Denied. You are not a registered student.")
         
     conn = sqlite3.connect(DB_PATH)
